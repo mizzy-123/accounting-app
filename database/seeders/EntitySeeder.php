@@ -44,6 +44,6 @@ class EntitySeeder extends Seeder
         $this->command->info('Entity seeder selesai:');
         $this->command->info("  - Entity Personal (id: {$personal->id})");
         $this->command->info("  - Entity Manifestasi (id: {$manifestasi->id})");
-        $this->command->info("  - Owner: owner@manifestasi.com / password");
+        $this->command->info('  - Owner: owner@manifestasi.com / password');
     }
 }

@@ -97,35 +97,35 @@ Kategori transaksi (untuk pelaporan & auto-categorization), per entity.
 ### `clients`
 | Kolom | Tipe | Keterangan |
 |---|---|---|
-| id | bigint PK | |
-| entity_id | bigint FK → entities.id | |
+| id | uuid (char 36) PK | auto-generated via HasUuids |
+| entity_id | uuid FK → entities.id | cascade delete |
 | name | varchar(255) | |
-| contact_info | text, nullable | |
+| contact_info | text nullable | email, phone, alamat (free-form) |
 | created_at, updated_at | timestamp | |
 
 ### `projects`
 | Kolom | Tipe | Keterangan |
 |---|---|---|
-| id | bigint PK | |
-| entity_id | bigint FK → entities.id | |
-| client_id | bigint FK → clients.id | |
+| id | uuid (char 36) PK | auto-generated via HasUuids |
+| entity_id | uuid FK → entities.id | cascade delete |
+| client_id | uuid FK → clients.id nullable | null = proyek tanpa client |
 | name | varchar(255) | |
-| budget | decimal(15,2), nullable | |
-| start_date | date, nullable | |
-| end_date | date, nullable | |
+| budget | decimal(15,2) nullable | |
+| start_date | date nullable | |
+| end_date | date nullable | |
 | status | enum('active','completed','cancelled') | default `active` |
 | created_at, updated_at | timestamp | |
 
 ### `invoices`
 | Kolom | Tipe | Keterangan |
 |---|---|---|
-| id | bigint PK | |
-| project_id | bigint FK → projects.id | |
+| id | uuid (char 36) PK | Sprint 5 |
+| project_id | uuid FK → projects.id | |
 | invoice_number | varchar(50) unique | |
 | items | json | array item: `{name, qty, price}` |
 | total | decimal(15,2) | |
 | status | enum('draft','sent','paid') | default `draft` |
-| due_date | date, nullable | untuk reminder piutang |
+| due_date | date nullable | untuk reminder piutang |
 | created_at, updated_at | timestamp | |
 
 ---

@@ -1,6 +1,7 @@
 {
     "agents": [
-        "antigravity"
+        "antigravity",
+        "cursor"
     ],
     "cloud": false,
     "skills": [

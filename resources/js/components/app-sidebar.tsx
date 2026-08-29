@@ -1,9 +1,16 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    ArrowLeftRight,
     BookOpen,
+    Briefcase,
+    Building2,
+    CalendarClock,
+    FileText,
     FolderGit2,
     LayoutGrid,
+    NotebookPen,
     Users,
+    Wallet,
 } from 'lucide-react';
 import { EntitySwitcher } from '@/components/entity-switcher';
 import AppLogo from '@/components/app-logo';
@@ -46,9 +53,56 @@ export function AppSidebar() {
             href: dashboard(),
             icon: LayoutGrid,
         },
+        {
+            title: 'Transaksi',
+            href: '/transactions',
+            icon: ArrowLeftRight,
+        },
     ];
 
-    // Nav items khusus entity bisnis + owner
+    if (activeEntity?.role === 'owner') {
+        mainNavItems.push({
+            title: 'Jurnal Penyesuaian',
+            href: '/journals/create',
+            icon: NotebookPen,
+        });
+    }
+
+    if (activeEntity?.role !== 'viewer') {
+        mainNavItems.push({
+            title: 'Transaksi Berulang',
+            href: '/recurring',
+            icon: CalendarClock,
+        });
+    }
+
+    // Nav items khusus entity bisnis
+    if (activeEntity?.type === 'business') {
+        mainNavItems.push(
+            {
+                title: 'Clients',
+                href: '/clients',
+                icon: Building2,
+            },
+            {
+                title: 'Projects',
+                href: '/projects',
+                icon: Briefcase,
+            },
+            {
+                title: 'Invoice',
+                href: '/invoices',
+                icon: FileText,
+            },
+            {
+                title: 'Piutang',
+                href: '/invoices/receivables',
+                icon: Wallet,
+            },
+        );
+    }
+
+    // Manajemen tim — hanya owner entity bisnis
     if (activeEntity?.type === 'business' && activeEntity?.role === 'owner') {
         mainNavItems.push({
             title: 'Manajemen Tim',

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Entity;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +19,7 @@ class EnsureEntityAccess
 {
     public function handle(Request $request, Closure $next): Response
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $request->user();
 
         if (! $user) {
@@ -63,7 +64,7 @@ class EnsureEntityAccess
      * Set entity aktif ke entity pertama yang bisa diakses user.
      * Prioritaskan entity bisnis (untuk member/viewer yang tidak bisa akses personal).
      */
-    private function resetToAccessibleEntity(Request $request, \App\Models\User $user): void
+    private function resetToAccessibleEntity(Request $request, User $user): void
     {
         // Owner: default ke personal
         // Member/viewer: default ke entity bisnis pertama

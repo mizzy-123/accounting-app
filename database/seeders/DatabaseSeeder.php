@@ -23,5 +23,6 @@ class DatabaseSeeder extends Seeder
 
         // Entity default + owner
         $this->call(EntitySeeder::class);
+        $this->call(ChartOfAccountsSeeder::class);
     }
 }

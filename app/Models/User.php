@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -52,9 +53,9 @@ class User extends Authenticatable implements PasskeyUser
     /**
      * Semua entity yang bisa diakses user ini (via pivot entity_user).
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Entity, $this>
+     * @return BelongsToMany<Entity, $this>
      */
-    public function entities(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function entities(): BelongsToMany
     {
         return $this->belongsToMany(Entity::class, 'entity_user')
             ->withPivot('role')
