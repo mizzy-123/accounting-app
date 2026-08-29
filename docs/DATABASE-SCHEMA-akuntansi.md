@@ -158,13 +158,16 @@ Polymorphic — bisa dipakai untuk transaksi, invoice, dll.
 ### `audit_logs`
 | Kolom | Tipe | Keterangan |
 |---|---|---|
-| id | bigint PK | |
-| user_id | bigint FK → users.id | |
+| id | uuid (char 36) PK | auto-generated via HasUuids |
+| user_id | uuid FK → users.id, nullable | null = aksi sistem |
+| entity_id | uuid FK → entities.id, nullable | untuk scoping per entity aktif |
 | action | varchar(50) | `created`/`updated`/`deleted`/`approved` |
 | model_type | varchar(255) | |
-| model_id | bigint | |
-| changes | json | before/after diff |
+| model_id | uuid | |
+| changes | json nullable | before/after diff |
 | created_at | timestamp | |
+
+Index: (`entity_id`, `created_at`), (`model_type`, `model_id`).
 
 ---
 

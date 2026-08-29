@@ -6,11 +6,13 @@ import {
     Building2,
     CalendarClock,
     ChartColumn,
+    ClipboardCheck,
     FileText,
     FolderGit2,
     LayoutGrid,
     NotebookPen,
     PiggyBank,
+    ScrollText,
     Tags,
     Upload,
     Users,
@@ -78,11 +80,23 @@ export function AppSidebar() {
     }
 
     if (activeEntity?.role === 'owner') {
-        mainNavItems.push({
-            title: 'Jurnal Penyesuaian',
-            href: '/journals/create',
-            icon: NotebookPen,
-        });
+        mainNavItems.push(
+            {
+                title: 'Jurnal Penyesuaian',
+                href: '/journals/create',
+                icon: NotebookPen,
+            },
+            {
+                title: 'Antrian Approval',
+                href: '/approvals',
+                icon: ClipboardCheck,
+            },
+            {
+                title: 'Audit Log',
+                href: '/audit-logs',
+                icon: ScrollText,
+            },
+        );
     }
 
     if (activeEntity?.role !== 'viewer') {

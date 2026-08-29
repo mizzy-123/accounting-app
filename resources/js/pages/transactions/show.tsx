@@ -1,5 +1,12 @@
-import { Head, Link } from '@inertiajs/react';
-import { Download, FileText } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import {
+    CheckCircle2,
+    Download,
+    FileText,
+    RotateCcw,
+    Send,
+    Trash2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -8,10 +15,18 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import type { TransactionDetail, TransactionType } from '@/types';
+import type {
+    TransactionDetail,
+    TransactionStatus,
+    TransactionType,
+} from '@/types';
 
 type Props = {
     transaction: TransactionDetail;
+    canSubmit: boolean;
+    canApprove: boolean;
+    canReject: boolean;
+    canDelete: boolean;
 };
 
 const typeLabels: Record<TransactionType, string> = {
@@ -22,6 +37,12 @@ const typeLabels: Record<TransactionType, string> = {
     adjustment: 'Jurnal Penyesuaian',
 };
 
+const statusLabels: Record<TransactionStatus, string> = {
+    draft: 'Draft',
+    pending_approval: 'Menunggu Approval',
+    approved: 'Disetujui (terkunci)',
+};
+
 function formatCurrency(amount: string): string {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
@@ -30,7 +51,13 @@ function formatCurrency(amount: string): string {
     }).format(Number(amount));
 }
 
-export default function TransactionsShow({ transaction }: Props) {
+export default function TransactionsShow({
+    transaction,
+    canSubmit,
+    canApprove,
+    canReject,
+    canDelete,
+}: Props) {
     const totalDebit = transaction.entries.reduce(
         (sum, entry) => sum + Number(entry.debit),
         0,
@@ -40,13 +67,14 @@ export default function TransactionsShow({ transaction }: Props) {
         0,
     );
     const isBalanced = totalDebit.toFixed(2) === totalKredit.toFixed(2);
+    const isLocked = transaction.status === 'approved';
 
     return (
         <>
             <Head title={`Transaksi · ${transaction.date}`} />
 
             <div className="mx-auto max-w-3xl space-y-6">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">
                             Detail Transaksi
@@ -55,10 +83,92 @@ export default function TransactionsShow({ transaction }: Props) {
                             {typeLabels[transaction.type]} · {transaction.date}
                         </p>
                     </div>
-                    <Button variant="outline" size="sm" asChild>
-                        <Link href="/transactions">Kembali</Link>
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                        {canSubmit && (
+                            <Button
+                                size="sm"
+                                className="gap-2"
+                                onClick={() =>
+                                    router.post(
+                                        `/transactions/${transaction.id}/submit`,
+                                    )
+                                }
+                            >
+                                <Send className="size-4" />
+                                Ajukan Approval
+                            </Button>
+                        )}
+                        {canApprove && (
+                            <Button
+                                size="sm"
+                                className="gap-2"
+                                onClick={() =>
+                                    router.post(
+                                        `/transactions/${transaction.id}/approve`,
+                                    )
+                                }
+                            >
+                                <CheckCircle2 className="size-4" />
+                                Setujui & Kunci
+                            </Button>
+                        )}
+                        {canReject && (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-2"
+                                onClick={() =>
+                                    router.post(
+                                        `/transactions/${transaction.id}/reject`,
+                                    )
+                                }
+                            >
+                                <RotateCcw className="size-4" />
+                                Kembalikan Draft
+                            </Button>
+                        )}
+                        {canDelete && (
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                className="gap-2"
+                                onClick={() => {
+                                    if (
+                                        confirm(
+                                            'Hapus transaksi draft/pending ini?',
+                                        )
+                                    ) {
+                                        router.delete(
+                                            `/transactions/${transaction.id}`,
+                                        );
+                                    }
+                                }}
+                            >
+                                <Trash2 className="size-4" />
+                                Hapus
+                            </Button>
+                        )}
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href="/transactions">Kembali</Link>
+                        </Button>
+                    </div>
                 </div>
+
+                {isLocked && (
+                    <Card className="border-amber-500/40 bg-amber-500/5">
+                        <CardContent className="pt-6 text-sm">
+                            Transaksi ini sudah disetujui dan terkunci. Perbaikan
+                            hanya lewat{' '}
+                            <Link
+                                href="/journals/create"
+                                className="font-medium underline underline-offset-4"
+                            >
+                                Jurnal Penyesuaian
+                            </Link>{' '}
+                            baru.
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Card>
                     <CardHeader>
@@ -68,7 +178,15 @@ export default function TransactionsShow({ transaction }: Props) {
                         </CardTitle>
                         <CardDescription>
                             Jumlah: {formatCurrency(transaction.amount)} ·
-                            Status: {transaction.status}
+                            Status:{' '}
+                            {statusLabels[transaction.status] ??
+                                transaction.status}
+                            {transaction.approver && (
+                                <>
+                                    {' '}
+                                    · Disetujui oleh {transaction.approver.name}
+                                </>
+                            )}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">

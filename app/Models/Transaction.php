@@ -101,9 +101,24 @@ class Transaction extends Model
         return $this->status === 'draft';
     }
 
+    public function isPendingApproval(): bool
+    {
+        return $this->status === 'pending_approval';
+    }
+
     public function isApproved(): bool
     {
         return $this->status === 'approved';
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->isApproved();
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->where('status', 'pending_approval');
     }
 
     public function scopeForEntity($query, Entity|string $entity)

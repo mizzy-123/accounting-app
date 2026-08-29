@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BankImportController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ClientController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\TransactionApprovalController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,8 +33,21 @@ Route::middleware(['auth', 'verified', 'entity.access'])->group(function () {
     Route::post('/transactions/inter-entity', [TransactionController::class, 'storeInterEntity'])
         ->name('transactions.inter-entity.store');
     Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
+    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
     Route::get('/transactions/{transaction}/attachments/{attachment}', [AttachmentController::class, 'show'])
         ->name('transactions.attachments.show');
+
+    // Approval flow (owner queue + status transitions)
+    Route::get('/approvals', [TransactionApprovalController::class, 'index'])->name('approvals.index');
+    Route::post('/transactions/{transaction}/submit', [TransactionApprovalController::class, 'submit'])
+        ->name('transactions.submit');
+    Route::post('/transactions/{transaction}/approve', [TransactionApprovalController::class, 'approve'])
+        ->name('transactions.approve');
+    Route::post('/transactions/{transaction}/reject', [TransactionApprovalController::class, 'reject'])
+        ->name('transactions.reject');
+
+    // Audit trail (owner only)
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 
     // Manual journal (owner only)
     Route::get('/journals/create', [ManualJournalController::class, 'create'])->name('journals.create');

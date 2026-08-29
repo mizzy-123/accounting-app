@@ -78,11 +78,37 @@ class TransactionController extends Controller
             abort(404);
         }
 
-        $transaction->load(['entries.account:id,name,type', 'category', 'creator:id,name', 'attachments']);
+        $transaction->load([
+            'entries.account:id,name,type',
+            'category',
+            'creator:id,name',
+            'approver:id,name',
+            'attachments',
+        ]);
 
         return Inertia::render('transactions/show', [
             'transaction' => TransactionPresenter::detail($transaction),
+            'canSubmit' => $request->user()->can('submit', $transaction),
+            'canApprove' => $request->user()->can('approve', $transaction),
+            'canReject' => $request->user()->can('reject', $transaction),
+            'canDelete' => $request->user()->can('delete', $transaction),
         ]);
+    }
+
+    public function destroy(Request $request, Transaction $transaction): RedirectResponse
+    {
+        $this->authorize('delete', $transaction);
+
+        $entity = $this->activeEntity($request);
+        if ($transaction->entity_id !== $entity->id) {
+            abort(404);
+        }
+
+        $this->transactionService->deleteEditable($transaction);
+
+        return redirect()
+            ->route('transactions.index')
+            ->with('success', 'Transaksi dihapus.');
     }
 
     public function storeInterEntity(StoreInterEntityTransferRequest $request): RedirectResponse

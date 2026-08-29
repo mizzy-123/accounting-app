@@ -26,6 +26,11 @@ class TransactionPresenter
                 'id' => $transaction->creator->id,
                 'name' => $transaction->creator->name,
             ] : null,
+            'approver' => $transaction->relationLoaded('approver') && $transaction->approver ? [
+                'id' => $transaction->approver->id,
+                'name' => $transaction->approver->name,
+            ] : null,
+            'approved_at' => $transaction->approved_at?->toIso8601String(),
         ];
     }
 

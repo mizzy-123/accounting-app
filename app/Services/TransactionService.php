@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Entity;
 use App\Models\RecurringTransaction;
 use App\Models\Transaction;
+use App\Models\TransactionEntry;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -302,6 +303,68 @@ class TransactionService
                 throw UnbalancedTransactionException::invalidEntryRow();
             }
         }
+    }
+
+    public function submitForApproval(Transaction $transaction): Transaction
+    {
+        if (! $transaction->isDraft()) {
+            throw new InvalidArgumentException('Hanya transaksi draft yang bisa diajukan untuk approval.');
+        }
+
+        $transaction->update(['status' => 'pending_approval']);
+
+        return $transaction->fresh(['entries.account', 'category', 'creator', 'attachments']);
+    }
+
+    public function approve(Transaction $transaction, User $approver): Transaction
+    {
+        if (! $transaction->isPendingApproval()) {
+            throw new InvalidArgumentException('Hanya transaksi yang menunggu approval yang bisa disetujui.');
+        }
+
+        $transaction->update([
+            'status' => 'approved',
+            'approved_by' => $approver->id,
+            'approved_at' => now(),
+        ]);
+
+        return $transaction->fresh(['entries.account', 'category', 'creator', 'approver', 'attachments']);
+    }
+
+    public function reject(Transaction $transaction): Transaction
+    {
+        if (! $transaction->isPendingApproval()) {
+            throw new InvalidArgumentException('Hanya transaksi yang menunggu approval yang bisa ditolak.');
+        }
+
+        $transaction->update([
+            'status' => 'draft',
+            'approved_by' => null,
+            'approved_at' => null,
+        ]);
+
+        return $transaction->fresh(['entries.account', 'category', 'creator', 'attachments']);
+    }
+
+    public function deleteEditable(Transaction $transaction): void
+    {
+        if ($transaction->isLocked()) {
+            throw new InvalidArgumentException(
+                'Transaksi yang sudah disetujui terkunci. Buat jurnal koreksi baru jika perlu perbaikan.',
+            );
+        }
+
+        DB::transaction(function () use ($transaction): void {
+            $transaction->attachments()->each(function ($attachment): void {
+                $attachment->delete();
+            });
+
+            $transaction->entries()->each(function (TransactionEntry $entry): void {
+                $entry->delete();
+            });
+
+            $transaction->delete();
+        });
     }
 
     private function createTransactionHeader(Entity $entity, User $user, array $attributes): Transaction

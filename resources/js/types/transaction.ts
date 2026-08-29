@@ -16,6 +16,8 @@ export type TransactionSummary = {
     status: TransactionStatus;
     category: { id: string; name: string } | null;
     creator: { id: string; name: string } | null;
+    approver?: { id: string; name: string } | null;
+    approved_at?: string | null;
 };
 
 export type TransactionEntry = {

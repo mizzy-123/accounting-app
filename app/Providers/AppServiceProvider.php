@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Transaction;
+use App\Models\TransactionEntry;
+use App\Observers\TransactionEntryObserver;
+use App\Observers\TransactionObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        Transaction::observe(TransactionObserver::class);
+        TransactionEntry::observe(TransactionEntryObserver::class);
     }
 
     /**
