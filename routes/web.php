@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\BankImportController;
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EntityController;
@@ -8,6 +10,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ManualJournalController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RecurringTransactionController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
@@ -63,6 +66,27 @@ Route::middleware(['auth', 'verified', 'entity.access'])->group(function () {
     Route::patch('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])
         ->name('invoices.status.update');
     Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
+
+    // Reports & export
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+
+    // Budgets (personal primarily; available to all entities with access)
+    Route::get('/budgets', [BudgetController::class, 'index'])->name('budgets.index');
+    Route::post('/budgets', [BudgetController::class, 'store'])->name('budgets.store');
+    Route::patch('/budgets/{budget}', [BudgetController::class, 'update'])->name('budgets.update');
+    Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
+
+    // Bank CSV import & auto-categorization rules
+    Route::get('/import', [BankImportController::class, 'index'])->name('import.index');
+    Route::post('/import/preview', [BankImportController::class, 'preview'])->name('import.preview');
+    Route::post('/import/confirm', [BankImportController::class, 'confirm'])->name('import.confirm');
+    Route::get('/import/rules', [BankImportController::class, 'rules'])->name('import.rules');
+    Route::post('/import/rules', [BankImportController::class, 'storeRule'])->name('import.rules.store');
+    Route::patch('/import/rules/{bankImportRule}', [BankImportController::class, 'updateRule'])
+        ->name('import.rules.update');
+    Route::delete('/import/rules/{bankImportRule}', [BankImportController::class, 'destroyRule'])
+        ->name('import.rules.destroy');
 
     // Team management (hanya entity bisnis, hanya owner)
     Route::prefix('/entity/{entity}/team')->name('entity.team.')->group(function () {

@@ -34,6 +34,8 @@ class TransactionService
                 'type' => 'income',
                 'amount' => $amount,
                 'category_id' => $category->id,
+                'project_id' => $data['project_id'] ?? null,
+                'client_id' => $data['client_id'] ?? null,
             ]);
 
             $this->createBalancedEntries($transaction, [
@@ -52,7 +54,7 @@ class TransactionService
     {
         return DB::transaction(function () use ($entity, $user, $data) {
             $amount = $this->normalizeAmount($data['amount']);
-            $assetAccount = $this->resolveAccount($entity, $data['account_id'], ['asset']);
+            $paymentAccount = $this->resolveAccount($entity, $data['account_id'], ['asset', 'liability']);
             $expenseAccount = $this->resolveAccountByName($entity, 'Beban', ['expense']);
             $category = $this->resolveCategory($entity, $data['category_id'], 'expense');
 
@@ -62,11 +64,13 @@ class TransactionService
                 'type' => 'expense',
                 'amount' => $amount,
                 'category_id' => $category->id,
+                'project_id' => $data['project_id'] ?? null,
+                'client_id' => $data['client_id'] ?? null,
             ]);
 
             $this->createBalancedEntries($transaction, [
                 ['account_id' => $expenseAccount->id, 'debit' => $amount, 'kredit' => 0],
-                ['account_id' => $assetAccount->id, 'debit' => 0, 'kredit' => $amount],
+                ['account_id' => $paymentAccount->id, 'debit' => 0, 'kredit' => $amount],
             ]);
 
             return $transaction->load(['entries.account', 'category', 'attachments']);
@@ -81,15 +85,19 @@ class TransactionService
         return DB::transaction(function () use ($entity, $user, $data) {
             $amount = $this->normalizeAmount($data['amount']);
             $fromAccount = $this->resolveAccount($entity, $data['from_account_id'], ['asset']);
-            $toAccount = $this->resolveAccount($entity, $data['to_account_id'], ['asset']);
+            $toAccount = $this->resolveAccount($entity, $data['to_account_id'], ['asset', 'liability']);
 
             if ($fromAccount->id === $toAccount->id) {
                 throw new InvalidArgumentException('Akun sumber dan tujuan tidak boleh sama.');
             }
 
+            $defaultDescription = $toAccount->type === 'liability'
+                ? 'Pelunasan kewajiban'
+                : 'Transfer antar akun';
+
             $transaction = $this->createTransactionHeader($entity, $user, [
                 'date' => $data['date'],
-                'description' => $data['description'] ?? 'Transfer antar akun',
+                'description' => $data['description'] ?? $defaultDescription,
                 'type' => 'transfer',
                 'amount' => $amount,
             ]);
@@ -305,6 +313,8 @@ class TransactionService
             'type' => $attributes['type'],
             'amount' => $attributes['amount'],
             'category_id' => $attributes['category_id'] ?? null,
+            'project_id' => $attributes['project_id'] ?? null,
+            'client_id' => $attributes['client_id'] ?? null,
             'status' => 'draft',
             'created_by' => $user->id,
             'reference' => $attributes['reference'] ?? null,

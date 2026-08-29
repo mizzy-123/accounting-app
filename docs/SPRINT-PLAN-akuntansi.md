@@ -113,11 +113,11 @@ Cara pakai: kerjakan satu sprint sampai selesai (semua checklist tercentang) seb
 
 **Tujuan:** Laporan keuangan utama tersedia dan bisa diekspor.
 
-- [ ] Migration `budgets` (lihat `DATABASE-SCHEMA-akuntansi.md` bagian 4)
-- [ ] Laporan Personal: cash flow bulanan, breakdown kategori, progress budget vs actual
-- [ ] Laporan Manifestasi: laba-rugi, cash flow, **neraca (balance sheet)** — dihitung dari `transaction_entries` per `account.type`
-- [ ] Laporan profitabilitas per project (revenue vs cost dari transaksi yang ter-tag)
-- [ ] Export laporan ke PDF dan Excel
+- [x] Migration `budgets` (lihat `DATABASE-SCHEMA-akuntansi.md` bagian 4)
+- [x] Laporan Personal: cash flow bulanan, breakdown kategori, progress budget vs actual
+- [x] Laporan Manifestasi: laba-rugi, cash flow, **neraca (balance sheet)** — dihitung dari `transaction_entries` per `account.type`
+- [x] Laporan profitabilitas per project (revenue vs cost dari transaksi yang ter-tag)
+- [x] Export laporan ke PDF dan Excel
 
 **Definition of Done:** Neraca yang dihasilkan balance secara matematis (total asset = total liability + equity). Semua laporan bisa diekspor.
 

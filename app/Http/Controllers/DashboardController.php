@@ -27,6 +27,7 @@ class DashboardController extends Controller
             'recentTransactions' => $dashboard['recent_transactions'],
             'businessOverview' => $dashboard['business_overview'],
             'invoiceReminders' => $dashboard['invoice_reminders'],
+            'budgetProgress' => $dashboard['budget_progress'],
         ]);
     }
 }

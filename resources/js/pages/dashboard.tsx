@@ -11,6 +11,7 @@ import { BusinessOverviewWidget } from '@/components/dashboard/business-overview
 import { CashFlowChart } from '@/components/dashboard/cash-flow-chart';
 import { InvoiceReminderWidget } from '@/components/dashboard/invoice-reminder-widget';
 import { PersonalBudgetWidget } from '@/components/dashboard/personal-budget-widget';
+import type { BudgetProgress } from '@/components/dashboard/personal-budget-widget';
 import {
     Card,
     CardContent,
@@ -40,6 +41,7 @@ type Props = {
     recentTransactions: RecentTransaction[];
     businessOverview: BusinessOverview | null;
     invoiceReminders: InvoiceReminder[];
+    budgetProgress: BudgetProgress | null;
 };
 
 const typeLabels: Record<TransactionType, string> = {
@@ -106,6 +108,7 @@ export default function Dashboard({
     recentTransactions,
     businessOverview,
     invoiceReminders,
+    budgetProgress,
 }: Props) {
     const { activeEntity } = usePage().props;
     const [chartPeriod, setChartPeriod] = useState<'weekly' | 'monthly'>(
@@ -243,7 +246,7 @@ export default function Dashboard({
 
                     {entityType === 'personal' ? (
                         <PersonalBudgetWidget
-                            categoryExpenses={categoryExpenses}
+                            budgetProgress={budgetProgress}
                         />
                     ) : (
                         <Card className="lg:col-span-1">

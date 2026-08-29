@@ -12,6 +12,8 @@ use Illuminate\Support\Collection;
 
 class DashboardService
 {
+    public function __construct(private ReportService $reports) {}
+
     /**
      * @return array{
      *     accounts: list<array{id: string, name: string, type: string, balance: string}>,
@@ -32,7 +34,20 @@ class DashboardService
      *         description: string|null,
      *         type: string,
      *         amount: string
-     *     }>
+     *     }>,
+     *     budget_progress: array{
+     *         period: string,
+     *         items: list<array{
+     *             budget_id: string|null,
+     *             category_id: string,
+     *             category_name: string,
+     *             budget: string,
+     *             actual: string,
+     *             remaining: string,
+     *             progress_percent: string
+     *         }>,
+     *         totals: array{budget: string, actual: string, remaining: string}
+     *     }|null
      * }
      */
     public function forEntity(Entity $entity): array
@@ -51,7 +66,15 @@ class DashboardService
             'recent_transactions' => $this->recentTransactions($entity),
             'business_overview' => null,
             'invoice_reminders' => [],
+            'budget_progress' => null,
         ];
+
+        if ($entity->isPersonal()) {
+            $payload['budget_progress'] = $this->reports->budgetVsActual(
+                $entity,
+                $now->format('Y-m'),
+            );
+        }
 
         if ($entity->isBusiness()) {
             $payload['business_overview'] = $this->businessOverview($entity);

@@ -43,6 +43,7 @@ test('authenticated users can visit the dashboard', function () {
             ->has('accounts')
             ->has('totals')
             ->has('chart')
+            ->has('budgetProgress')
             ->where('entityType', 'personal'));
 });
 

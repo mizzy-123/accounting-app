@@ -30,6 +30,7 @@ class Transaction extends Model
         'client_id',
         'category_id',
         'recurring_transaction_id',
+        'bank_import_batch_id',
         'date',
         'description',
         'type',

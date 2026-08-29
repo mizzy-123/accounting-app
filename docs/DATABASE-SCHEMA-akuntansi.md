@@ -135,12 +135,14 @@ Kategori transaksi (untuk pelaporan & auto-categorization), per entity.
 ### `budgets`
 | Kolom | Tipe | Keterangan |
 |---|---|---|
-| id | bigint PK | |
-| entity_id | bigint FK → entities.id | |
-| category_id | bigint FK → categories.id | |
+| id | uuid (char 36) PK | auto-generated via HasUuids |
+| entity_id | uuid FK → entities.id | cascade delete |
+| category_id | uuid FK → categories.id | restrict delete |
 | period | varchar(7) | format `YYYY-MM` |
 | amount | decimal(15,2) | |
 | created_at, updated_at | timestamp | |
+
+Index: unique (`entity_id`, `category_id`, `period`).
 
 ### `attachments`
 Polymorphic — bisa dipakai untuk transaksi, invoice, dll.

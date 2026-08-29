@@ -92,4 +92,19 @@ class Entity extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
+    public function bankImportRules(): HasMany
+    {
+        return $this->hasMany(BankImportRule::class);
+    }
+
+    public function bankImportBatches(): HasMany
+    {
+        return $this->hasMany(BankImportBatch::class);
+    }
+
+    public function budgets(): HasMany
+    {
+        return $this->hasMany(Budget::class);
+    }
 }

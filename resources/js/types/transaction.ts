@@ -42,7 +42,7 @@ export type TransactionDetail = TransactionSummary & {
 export type AccountOption = {
     id: string;
     name: string;
-    type?: string;
+    type: string;
 };
 
 export type CategoryOption = {

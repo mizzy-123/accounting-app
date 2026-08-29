@@ -116,7 +116,31 @@ class TransactionController extends Controller
             ->active()
             ->where('type', 'asset')
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'type']);
+
+        $paymentAccounts = Account::query()
+            ->forEntity($entity)
+            ->active()
+            ->whereIn('type', ['asset', 'liability'])
+            ->orderByRaw("CASE type WHEN 'asset' THEN 0 ELSE 1 END")
+            ->orderBy('name')
+            ->get(['id', 'name', 'type']);
+
+        $transferDestinationAccounts = $paymentAccounts;
+
+        $chartOverview = Account::query()
+            ->forEntity($entity)
+            ->active()
+            ->orderByRaw("CASE type WHEN 'asset' THEN 0 WHEN 'liability' THEN 1 WHEN 'equity' THEN 2 WHEN 'revenue' THEN 3 ELSE 4 END")
+            ->orderBy('name')
+            ->get(['id', 'name', 'type'])
+            ->groupBy('type')
+            ->map(fn ($group) => $group->map(fn (Account $account) => [
+                'id' => $account->id,
+                'name' => $account->name,
+                'type' => $account->type,
+            ])->values())
+            ->all();
 
         $incomeCategories = Category::query()
             ->forEntity($entity)
@@ -144,7 +168,7 @@ class TransactionController extends Controller
                     ->active()
                     ->where('type', 'asset')
                     ->orderBy('name')
-                    ->get(['id', 'name']),
+                    ->get(['id', 'name', 'type']),
             ]);
 
         // Untuk entity bisnis: kirim projects + clients ke form
@@ -163,6 +187,9 @@ class TransactionController extends Controller
 
         return [
             'accounts' => $assetAccounts,
+            'paymentAccounts' => $paymentAccounts,
+            'transferDestinationAccounts' => $transferDestinationAccounts,
+            'chartOverview' => $chartOverview,
             'incomeCategories' => $incomeCategories,
             'expenseCategories' => $expenseCategories,
             'canInterEntityTransfer' => $request->user()->can('createInterEntityTransfer', Transaction::class)

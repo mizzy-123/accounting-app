@@ -25,6 +25,11 @@ type FormMode = 'simple' | 'inter-entity';
 
 type Props = {
     accounts: AccountOption[];
+    paymentAccounts: AccountOption[];
+    transferDestinationAccounts: AccountOption[];
+    chartOverview: Partial<
+        Record<'asset' | 'liability' | 'equity' | 'revenue' | 'expense', AccountOption[]>
+    >;
     incomeCategories: CategoryOption[];
     expenseCategories: CategoryOption[];
     canInterEntityTransfer: boolean;
@@ -34,8 +39,27 @@ type Props = {
     isBusiness: boolean;
 };
 
+const typeLabels: Record<string, string> = {
+    asset: 'Aset / Dompet',
+    liability: 'Kewajiban',
+    equity: 'Ekuitas',
+    revenue: 'Pendapatan (otomatis)',
+    expense: 'Beban (otomatis)',
+};
+
+function accountLabel(account: AccountOption): string {
+    if (account.type === 'liability') {
+        return `${account.name} · Kewajiban`;
+    }
+
+    return account.name;
+}
+
 export default function TransactionsCreate({
     accounts,
+    paymentAccounts,
+    transferDestinationAccounts,
+    chartOverview,
     incomeCategories,
     expenseCategories,
     canInterEntityTransfer,
@@ -105,10 +129,51 @@ export default function TransactionsCreate({
                         Catat Transaksi
                     </h1>
                     <p className="text-muted-foreground text-sm">
-                        Isi form sederhana — sistem akan generate jurnal
-                        debit/kredit otomatis.
+                        Pilih dompet/sumber dana — sistem otomatis menjurnal
+                        ke akun Pendapatan atau Beban.
                     </p>
                 </div>
+
+                <Card className="border-dashed">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base">
+                            Kenapa tidak semua akun muncul?
+                        </CardTitle>
+                        <CardDescription>
+                            Form ini hanya menampilkan akun yang relevan sebagai
+                            sumber/tujuan uang. Akun lain tetap ada di chart of
+                            accounts dan dipakai otomatis atau lewat Jurnal
+                            Penyesuaian.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
+                        {(
+                            [
+                                'asset',
+                                'liability',
+                                'equity',
+                                'revenue',
+                                'expense',
+                            ] as const
+                        ).map((type) => {
+                            const rows = chartOverview[type] ?? [];
+                            if (rows.length === 0) {
+                                return null;
+                            }
+
+                            return (
+                                <div key={type}>
+                                    <p className="text-muted-foreground mb-1 text-xs font-medium uppercase tracking-wide">
+                                        {typeLabels[type]}
+                                    </p>
+                                    <p className="text-foreground">
+                                        {rows.map((a) => a.name).join(', ')}
+                                    </p>
+                                </div>
+                            );
+                        })}
+                    </CardContent>
+                </Card>
 
                 {canInterEntityTransfer && (
                     <div className="grid grid-cols-2 gap-2">
@@ -162,7 +227,17 @@ export default function TransactionsCreate({
                                                     ? 'default'
                                                     : 'outline'
                                             }
-                                            onClick={() => setSimpleType(type)}
+                                            onClick={() => {
+                                                setSimpleType(type);
+                                                simpleForm.setData(
+                                                    'account_id',
+                                                    '',
+                                                );
+                                                simpleForm.setData(
+                                                    'category_id',
+                                                    '',
+                                                );
+                                            }}
                                         >
                                             {type === 'income' && 'Pemasukan'}
                                             {type === 'expense' && 'Pengeluaran'}
@@ -218,9 +293,14 @@ export default function TransactionsCreate({
                                         <div className="space-y-2">
                                             <Label>
                                                 {simpleType === 'income'
-                                                    ? 'Masuk ke Akun'
-                                                    : 'Dibayar dari Akun'}
+                                                    ? 'Masuk ke akun (dompet)'
+                                                    : 'Dibayar dari akun'}
                                             </Label>
+                                            <p className="text-muted-foreground text-xs">
+                                                {simpleType === 'income'
+                                                    ? 'Hanya akun aset: Kas, Bank, E-Wallet, Piutang, dll. Lawan jurnal: Pendapatan (otomatis).'
+                                                    : 'Bisa aset (Kas/Bank/E-Wallet) atau kewajiban (mis. Hutang Kartu Kredit). Lawan jurnal: Beban (otomatis).'}
+                                            </p>
                                             <Select
                                                 value={simpleForm.data.account_id}
                                                 onValueChange={(value) =>
@@ -234,16 +314,26 @@ export default function TransactionsCreate({
                                                     <SelectValue placeholder="Pilih akun" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {accounts.map((account) => (
+                                                    {(simpleType === 'income'
+                                                        ? accounts
+                                                        : paymentAccounts
+                                                    ).map((account) => (
                                                         <SelectItem
                                                             key={account.id}
                                                             value={account.id}
                                                         >
-                                                            {account.name}
+                                                            {accountLabel(
+                                                                account,
+                                                            )}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
+                                            {simpleForm.errors.account_id && (
+                                                <p className="text-destructive text-sm">
+                                                    {simpleForm.errors.account_id}
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div className="space-y-2">
@@ -281,63 +371,89 @@ export default function TransactionsCreate({
                                 )}
 
                                 {simpleType === 'transfer' && (
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label>Dari Akun</Label>
-                                            <Select
-                                                value={
-                                                    simpleForm.data
-                                                        .from_account_id
-                                                }
-                                                onValueChange={(value) =>
-                                                    simpleForm.setData(
-                                                        'from_account_id',
-                                                        value,
-                                                    )
-                                                }
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Pilih akun sumber" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {accounts.map((account) => (
-                                                        <SelectItem
-                                                            key={account.id}
-                                                            value={account.id}
-                                                        >
-                                                            {account.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Ke Akun</Label>
-                                            <Select
-                                                value={
-                                                    simpleForm.data.to_account_id
-                                                }
-                                                onValueChange={(value) =>
-                                                    simpleForm.setData(
-                                                        'to_account_id',
-                                                        value,
-                                                    )
-                                                }
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Pilih akun tujuan" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {accounts.map((account) => (
-                                                        <SelectItem
-                                                            key={account.id}
-                                                            value={account.id}
-                                                        >
-                                                            {account.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                    <div className="space-y-3">
+                                        <p className="text-muted-foreground text-xs">
+                                            Transfer antar dompet, atau bayar
+                                            kewajiban (dari Bank ke Hutang Kartu
+                                            Kredit).
+                                        </p>
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            <div className="space-y-2">
+                                                <Label>Dari akun (dompet)</Label>
+                                                <Select
+                                                    value={
+                                                        simpleForm.data
+                                                            .from_account_id
+                                                    }
+                                                    onValueChange={(value) =>
+                                                        simpleForm.setData(
+                                                            'from_account_id',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Pilih akun sumber" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {accounts.map(
+                                                            (account) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        account.id
+                                                                    }
+                                                                    value={
+                                                                        account.id
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        account.name
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>
+                                                    Ke akun (dompet / hutang)
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        simpleForm.data
+                                                            .to_account_id
+                                                    }
+                                                    onValueChange={(value) =>
+                                                        simpleForm.setData(
+                                                            'to_account_id',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Pilih akun tujuan" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {transferDestinationAccounts.map(
+                                                            (account) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        account.id
+                                                                    }
+                                                                    value={
+                                                                        account.id
+                                                                    }
+                                                                >
+                                                                    {accountLabel(
+                                                                        account,
+                                                                    )}
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                         </div>
                                     </div>
                                 )}

@@ -5,10 +5,14 @@ import {
     Briefcase,
     Building2,
     CalendarClock,
+    ChartColumn,
     FileText,
     FolderGit2,
     LayoutGrid,
     NotebookPen,
+    PiggyBank,
+    Tags,
+    Upload,
     Users,
     Wallet,
 } from 'lucide-react';
@@ -58,7 +62,20 @@ export function AppSidebar() {
             href: '/transactions',
             icon: ArrowLeftRight,
         },
+        {
+            title: 'Laporan',
+            href: '/reports',
+            icon: ChartColumn,
+        },
     ];
+
+    if (activeEntity?.type === 'personal' && activeEntity?.role !== 'viewer') {
+        mainNavItems.push({
+            title: 'Budget',
+            href: '/budgets',
+            icon: PiggyBank,
+        });
+    }
 
     if (activeEntity?.role === 'owner') {
         mainNavItems.push({
@@ -69,11 +86,23 @@ export function AppSidebar() {
     }
 
     if (activeEntity?.role !== 'viewer') {
-        mainNavItems.push({
-            title: 'Transaksi Berulang',
-            href: '/recurring',
-            icon: CalendarClock,
-        });
+        mainNavItems.push(
+            {
+                title: 'Transaksi Berulang',
+                href: '/recurring',
+                icon: CalendarClock,
+            },
+            {
+                title: 'Import CSV',
+                href: '/import',
+                icon: Upload,
+            },
+            {
+                title: 'Rule Kategori',
+                href: '/import/rules',
+                icon: Tags,
+            },
+        );
     }
 
     // Nav items khusus entity bisnis

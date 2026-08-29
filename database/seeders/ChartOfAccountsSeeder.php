@@ -11,6 +11,11 @@ class ChartOfAccountsSeeder extends Seeder
 {
     /**
      * Seed chart of accounts & default categories per entity.
+     *
+     * Catatan:
+     * - Akun type `asset` / `liability` bisa dipilih di form transaksi biasa.
+     * - `Pendapatan` & `Beban` dipakai otomatis oleh TransactionService (jangan diganti namanya).
+     * - `Modal` & `Owner Draw` dipakai transfer antar entity + jurnal manual.
      */
     public function run(): void
     {
@@ -25,12 +30,22 @@ class ChartOfAccountsSeeder extends Seeder
     private function seedAccounts(Entity $entity): void
     {
         $accounts = [
+            // Dompet / aset — muncul di form income, expense, transfer
             ['name' => 'Kas', 'type' => 'asset'],
             ['name' => 'Bank', 'type' => 'asset'],
+            ['name' => 'E-Wallet', 'type' => 'asset'],
             ['name' => 'Piutang', 'type' => 'asset'],
+
+            // Kewajiban — bisa dipilih saat expense (bayar pakai hutang) / transfer pelunasan
             ['name' => 'Hutang', 'type' => 'liability'],
+            ['name' => 'Hutang Kartu Kredit', 'type' => 'liability'],
+            ['name' => 'Hutang Usaha', 'type' => 'liability'],
+
+            // Ekuitas — jurnal manual & transfer antar entity
             ['name' => 'Modal', 'type' => 'equity'],
             ['name' => 'Owner Draw', 'type' => 'equity'],
+
+            // Lawan otomatis double-entry (jangan rename)
             ['name' => 'Pendapatan', 'type' => 'revenue'],
             ['name' => 'Beban', 'type' => 'expense'],
         ];
@@ -58,6 +73,8 @@ class ChartOfAccountsSeeder extends Seeder
             ['name' => 'Makan', 'type' => 'expense'],
             ['name' => 'Utilities', 'type' => 'expense'],
             ['name' => 'Operasional', 'type' => 'expense'],
+            ['name' => 'Belanja', 'type' => 'expense'],
+            ['name' => 'Hiburan', 'type' => 'expense'],
         ];
 
         foreach ($categories as $category) {

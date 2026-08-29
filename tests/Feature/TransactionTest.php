@@ -194,3 +194,63 @@ test('owner can access manual journal page', function () {
         ->get('/journals/create')
         ->assertOk();
 });
+
+test('expense can be paid via liability account such as credit card', function () {
+    ['owner' => $owner, 'personal' => $entity] = createOwnerWithEntities();
+    $service = app(TransactionService::class);
+
+    $creditCard = Account::query()
+        ->where('entity_id', $entity->id)
+        ->where('name', 'Hutang Kartu Kredit')
+        ->firstOrFail();
+
+    $transaction = $service->createExpense($entity, $owner, [
+        'date' => '2026-08-29',
+        'amount' => 350_000,
+        'account_id' => $creditCard->id,
+        'category_id' => expenseCategory($entity)->id,
+        'description' => 'Belanja CC',
+    ]);
+
+    $credited = $transaction->entries->firstWhere('account_id', $creditCard->id);
+
+    expect($credited)->not->toBeNull()
+        ->and((float) $credited->kredit)->toBe(350_000.0)
+        ->and((float) $credited->debit)->toBe(0.0);
+});
+
+test('transfer can pay down a liability from an asset account', function () {
+    ['owner' => $owner, 'personal' => $entity] = createOwnerWithEntities();
+    $service = app(TransactionService::class);
+
+    $creditCard = Account::query()
+        ->where('entity_id', $entity->id)
+        ->where('name', 'Hutang Kartu Kredit')
+        ->firstOrFail();
+
+    $transaction = $service->createTransfer($entity, $owner, [
+        'date' => '2026-08-29',
+        'amount' => 200_000,
+        'from_account_id' => assetAccount($entity)->id,
+        'to_account_id' => $creditCard->id,
+    ]);
+
+    expect($transaction->description)->toBe('Pelunasan kewajiban');
+});
+
+test('create transaction form exposes payment and chart overview accounts', function () {
+    ['owner' => $owner, 'personal' => $entity] = createOwnerWithEntities();
+
+    $this->actingAs($owner)
+        ->withSession(['active_entity_id' => $entity->id])
+        ->get('/transactions/create')
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page
+            ->component('transactions/create')
+            ->has('paymentAccounts')
+            ->has('transferDestinationAccounts')
+            ->has('chartOverview.asset')
+            ->has('chartOverview.liability')
+            ->has('chartOverview.revenue')
+            ->has('chartOverview.expense'));
+});
