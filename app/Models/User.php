@@ -83,6 +83,17 @@ class User extends Authenticatable implements PasskeyUser
     }
 
     /**
+     * Cek apakah user sudah punya entity personal sebagai owner.
+     */
+    public function ownsPersonalEntity(): bool
+    {
+        return $this->entities()
+            ->where('entities.type', 'personal')
+            ->wherePivot('role', 'owner')
+            ->exists();
+    }
+
+    /**
      * Cek apakah user punya akses ke entity tertentu.
      */
     public function hasAccessTo(Entity $entity): bool

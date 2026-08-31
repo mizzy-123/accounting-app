@@ -22,7 +22,8 @@ Route::inertia('/', 'welcome')->name('home');
 Route::middleware(['auth', 'verified', 'entity.access'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
-    // Entity switcher
+    // Entity management
+    Route::post('/entities', [EntityController::class, 'store'])->name('entities.store');
     Route::post('/entity/{entity}/switch', [EntityController::class, 'switch'])
         ->name('entity.switch');
 

@@ -40,8 +40,8 @@ class HandleInertiaRequests extends Middleware
         /** @var User|null $user */
         $user = $request->user();
 
-        // Entity aktif dari request attribute (set oleh EnsureEntityAccess middleware)
-        $activeEntity = $request->attributes->get('active_entity');
+        // Entity aktif — resolve dari request attribute (post middleware) atau session
+        $activeEntity = $this->resolveActiveEntity($request, $user);
 
         // Daftar entity yang bisa diakses user (personal hanya untuk owner)
         $entities = null;
@@ -78,6 +78,42 @@ class HandleInertiaRequests extends Middleware
                 'role' => $user?->getEntityRole($activeEntity),
             ] : null,
             'entities' => $entities,
+            'canCreateEntity' => (bool) $user,
+            'canCreatePersonalEntity' => $user ? ! $user->ownsPersonalEntity() : false,
         ];
+    }
+
+    /**
+     * Resolve entity aktif untuk shared Inertia props dari session
+     * (route middleware `entity.access` set attribute untuk controller).
+     */
+    private function resolveActiveEntity(Request $request, ?User $user): ?Entity
+    {
+        if (! $user) {
+            return null;
+        }
+
+        $fromRequest = $request->attributes->get('active_entity');
+        if ($fromRequest instanceof Entity) {
+            return $fromRequest;
+        }
+
+        $activeEntityId = session('active_entity_id');
+        if ($activeEntityId) {
+            $entity = Entity::find($activeEntityId);
+            if ($entity && $user->hasAccessTo($entity)) {
+                if ($entity->isPersonal() && ! $user->isOwnerOf($entity)) {
+                    // member/viewer tidak boleh personal — lanjut ke default
+                } else {
+                    return $entity;
+                }
+            }
+        }
+
+        $entities = $user->entities()->get();
+
+        return $entities->firstWhere(fn (Entity $entity) => $entity->isPersonal() && $user->isOwnerOf($entity))
+            ?? $entities->firstWhere(fn (Entity $entity) => $entity->isBusiness())
+            ?? $entities->first();
     }
 }

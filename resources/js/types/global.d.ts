@@ -15,6 +15,8 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             activeEntity: Entity | null;
             entities: Entity[] | null;
+            canCreateEntity: boolean;
+            canCreatePersonalEntity: boolean;
             [key: string]: unknown;
         };
     }

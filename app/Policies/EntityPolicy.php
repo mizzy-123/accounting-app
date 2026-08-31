@@ -8,6 +8,15 @@ use App\Models\User;
 class EntityPolicy
 {
     /**
+     * User yang sudah login bisa membuat entity bisnis baru.
+     * Entity personal tidak bisa dibuat lewat UI (hanya via seeder).
+     */
+    public function create(User $user): bool
+    {
+        return true;
+    }
+
+    /**
      * Cek apakah user bisa melihat/mengakses entity ini.
      * Personal entity hanya bisa diakses owner.
      */
