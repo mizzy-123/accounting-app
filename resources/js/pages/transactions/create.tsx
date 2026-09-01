@@ -1,54 +1,62 @@
-import { Head, Link, useForm } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Head, Link, useForm } from "@inertiajs/react";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select';
-import type { AccountOption, CategoryOption, Client, OtherEntityOption } from '@/types';
-import type { Project } from '@/types';
+} from "@/components/ui/select";
+import type {
+    AccountOption,
+    CategoryOption,
+    Client,
+    OtherEntityOption,
+} from "@/types";
+import type { Project } from "@/types";
 
-type SimpleType = 'income' | 'expense' | 'transfer';
-type FormMode = 'simple' | 'inter-entity';
+type SimpleType = "income" | "expense" | "transfer";
+type FormMode = "simple" | "inter-entity";
 
 type Props = {
     accounts: AccountOption[];
     paymentAccounts: AccountOption[];
     transferDestinationAccounts: AccountOption[];
     chartOverview: Partial<
-        Record<'asset' | 'liability' | 'equity' | 'revenue' | 'expense', AccountOption[]>
+        Record<
+            "asset" | "liability" | "equity" | "revenue" | "expense",
+            AccountOption[]
+        >
     >;
     incomeCategories: CategoryOption[];
     expenseCategories: CategoryOption[];
     canInterEntityTransfer: boolean;
     otherEntities: OtherEntityOption[];
-    projects: Pick<Project, 'id' | 'name' | 'client_id'>[];
-    clients: Pick<Client, 'id' | 'name'>[];
+    projects: Pick<Project, "id" | "name" | "client_id">[];
+    clients: Pick<Client, "id" | "name">[];
     isBusiness: boolean;
 };
 
 const typeLabels: Record<string, string> = {
-    asset: 'Aset / Dompet',
-    liability: 'Kewajiban',
-    equity: 'Ekuitas',
-    revenue: 'Pendapatan (otomatis)',
-    expense: 'Beban (otomatis)',
+    asset: "Aset / Dompet",
+    liability: "Kewajiban",
+    equity: "Ekuitas",
+    revenue: "Pendapatan (otomatis)",
+    expense: "Beban (otomatis)",
 };
 
 function accountLabel(account: AccountOption): string {
-    if (account.type === 'liability') {
+    if (account.type === "liability") {
         return `${account.name} · Kewajiban`;
     }
 
@@ -69,30 +77,30 @@ export default function TransactionsCreate({
     isBusiness,
 }: Props) {
     const today = new Date().toISOString().slice(0, 10);
-    const [mode, setMode] = useState<FormMode>('simple');
-    const [simpleType, setSimpleType] = useState<SimpleType>('expense');
+    const [mode, setMode] = useState<FormMode>("simple");
+    const [simpleType, setSimpleType] = useState<SimpleType>("expense");
 
     const simpleForm = useForm({
-        type: 'expense' as SimpleType,
+        type: "expense" as SimpleType,
         date: today,
-        amount: '',
-        account_id: '',
-        category_id: '',
-        from_account_id: '',
-        to_account_id: '',
-        description: '',
-        project_id: '',
-        client_id: '',
+        amount: "",
+        account_id: "",
+        category_id: "",
+        from_account_id: "",
+        to_account_id: "",
+        description: "",
+        project_id: "",
+        client_id: "",
         attachment: null as File | null,
     });
 
     const interEntityForm = useForm({
         date: today,
-        amount: '',
-        from_account_id: '',
-        to_entity_id: otherEntities[0]?.id ?? '',
-        to_account_id: '',
-        description: '',
+        amount: "",
+        from_account_id: "",
+        to_entity_id: otherEntities[0]?.id ?? "",
+        to_account_id: "",
+        description: "",
     });
 
     const selectedEntity = useMemo(
@@ -109,14 +117,14 @@ export default function TransactionsCreate({
             ...data,
             type: simpleType,
         }));
-        simpleForm.post('/transactions', {
+        simpleForm.post("/transactions", {
             forceFormData: true,
         });
     }
 
     function submitInterEntity(e: React.FormEvent) {
         e.preventDefault();
-        interEntityForm.post('/transactions/inter-entity');
+        interEntityForm.post("/transactions/inter-entity");
     }
 
     return (
@@ -129,12 +137,12 @@ export default function TransactionsCreate({
                         Catat Transaksi
                     </h1>
                     <p className="text-muted-foreground text-sm">
-                        Pilih dompet/sumber dana — sistem otomatis menjurnal
-                        ke akun Pendapatan atau Beban.
+                        Pilih dompet/sumber dana — sistem otomatis menjurnal ke
+                        akun Pendapatan atau Beban.
                     </p>
                 </div>
 
-                <Card className="border-dashed">
+                {/* <Card className="border-dashed">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base">
                             Kenapa tidak semua akun muncul?
@@ -173,30 +181,30 @@ export default function TransactionsCreate({
                             );
                         })}
                     </CardContent>
-                </Card>
+                </Card> */}
 
                 {canInterEntityTransfer && (
                     <div className="grid grid-cols-2 gap-2">
                         <Button
                             type="button"
-                            variant={mode === 'simple' ? 'default' : 'outline'}
-                            onClick={() => setMode('simple')}
+                            variant={mode === "simple" ? "default" : "outline"}
+                            onClick={() => setMode("simple")}
                         >
                             Transaksi Biasa
                         </Button>
                         <Button
                             type="button"
                             variant={
-                                mode === 'inter-entity' ? 'default' : 'outline'
+                                mode === "inter-entity" ? "default" : "outline"
                             }
-                            onClick={() => setMode('inter-entity')}
+                            onClick={() => setMode("inter-entity")}
                         >
                             Transfer Antar Entity
                         </Button>
                     </div>
                 )}
 
-                {mode === 'simple' ? (
+                {mode === "simple" ? (
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">
@@ -207,16 +215,13 @@ export default function TransactionsCreate({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <form
-                                onSubmit={submitSimple}
-                                className="space-y-4"
-                            >
+                            <form onSubmit={submitSimple} className="space-y-4">
                                 <div className="grid grid-cols-3 gap-2">
                                     {(
                                         [
-                                            'income',
-                                            'expense',
-                                            'transfer',
+                                            "income",
+                                            "expense",
+                                            "transfer",
                                         ] as SimpleType[]
                                     ).map((type) => (
                                         <Button
@@ -224,24 +229,25 @@ export default function TransactionsCreate({
                                             type="button"
                                             variant={
                                                 simpleType === type
-                                                    ? 'default'
-                                                    : 'outline'
+                                                    ? "default"
+                                                    : "outline"
                                             }
                                             onClick={() => {
                                                 setSimpleType(type);
                                                 simpleForm.setData(
-                                                    'account_id',
-                                                    '',
+                                                    "account_id",
+                                                    "",
                                                 );
                                                 simpleForm.setData(
-                                                    'category_id',
-                                                    '',
+                                                    "category_id",
+                                                    "",
                                                 );
                                             }}
                                         >
-                                            {type === 'income' && 'Pemasukan'}
-                                            {type === 'expense' && 'Pengeluaran'}
-                                            {type === 'transfer' && 'Transfer'}
+                                            {type === "income" && "Pemasukan"}
+                                            {type === "expense" &&
+                                                "Pengeluaran"}
+                                            {type === "transfer" && "Transfer"}
                                         </Button>
                                     ))}
                                 </div>
@@ -255,7 +261,7 @@ export default function TransactionsCreate({
                                             value={simpleForm.data.date}
                                             onChange={(e) =>
                                                 simpleForm.setData(
-                                                    'date',
+                                                    "date",
                                                     e.target.value,
                                                 )
                                             }
@@ -274,7 +280,7 @@ export default function TransactionsCreate({
                                             value={simpleForm.data.amount}
                                             onChange={(e) =>
                                                 simpleForm.setData(
-                                                    'amount',
+                                                    "amount",
                                                     e.target.value,
                                                 )
                                             }
@@ -288,24 +294,26 @@ export default function TransactionsCreate({
                                     </div>
                                 </div>
 
-                                {simpleType !== 'transfer' && (
+                                {simpleType !== "transfer" && (
                                     <>
                                         <div className="space-y-2">
                                             <Label>
-                                                {simpleType === 'income'
-                                                    ? 'Masuk ke akun (dompet)'
-                                                    : 'Dibayar dari akun'}
+                                                {simpleType === "income"
+                                                    ? "Masuk ke akun (dompet)"
+                                                    : "Dibayar dari akun"}
                                             </Label>
                                             <p className="text-muted-foreground text-xs">
-                                                {simpleType === 'income'
-                                                    ? 'Hanya akun aset: Kas, Bank, E-Wallet, Piutang, dll. Lawan jurnal: Pendapatan (otomatis).'
-                                                    : 'Bisa aset (Kas/Bank/E-Wallet) atau kewajiban (mis. Hutang Kartu Kredit). Lawan jurnal: Beban (otomatis).'}
+                                                {simpleType === "income"
+                                                    ? "Hanya akun aset: Kas, Bank, E-Wallet, Piutang, dll. Lawan jurnal: Pendapatan (otomatis)."
+                                                    : "Bisa aset (Kas/Bank/E-Wallet) atau kewajiban (mis. Hutang Kartu Kredit). Lawan jurnal: Beban (otomatis)."}
                                             </p>
                                             <Select
-                                                value={simpleForm.data.account_id}
+                                                value={
+                                                    simpleForm.data.account_id
+                                                }
                                                 onValueChange={(value) =>
                                                     simpleForm.setData(
-                                                        'account_id',
+                                                        "account_id",
                                                         value,
                                                     )
                                                 }
@@ -314,7 +322,7 @@ export default function TransactionsCreate({
                                                     <SelectValue placeholder="Pilih akun" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {(simpleType === 'income'
+                                                    {(simpleType === "income"
                                                         ? accounts
                                                         : paymentAccounts
                                                     ).map((account) => (
@@ -331,7 +339,10 @@ export default function TransactionsCreate({
                                             </Select>
                                             {simpleForm.errors.account_id && (
                                                 <p className="text-destructive text-sm">
-                                                    {simpleForm.errors.account_id}
+                                                    {
+                                                        simpleForm.errors
+                                                            .account_id
+                                                    }
                                                 </p>
                                             )}
                                         </div>
@@ -344,7 +355,7 @@ export default function TransactionsCreate({
                                                 }
                                                 onValueChange={(value) =>
                                                     simpleForm.setData(
-                                                        'category_id',
+                                                        "category_id",
                                                         value,
                                                     )
                                                 }
@@ -353,7 +364,7 @@ export default function TransactionsCreate({
                                                     <SelectValue placeholder="Pilih kategori" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {(simpleType === 'income'
+                                                    {(simpleType === "income"
                                                         ? incomeCategories
                                                         : expenseCategories
                                                     ).map((category) => (
@@ -370,7 +381,7 @@ export default function TransactionsCreate({
                                     </>
                                 )}
 
-                                {simpleType === 'transfer' && (
+                                {simpleType === "transfer" && (
                                     <div className="space-y-3">
                                         <p className="text-muted-foreground text-xs">
                                             Transfer antar dompet, atau bayar
@@ -379,7 +390,9 @@ export default function TransactionsCreate({
                                         </p>
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <div className="space-y-2">
-                                                <Label>Dari akun (dompet)</Label>
+                                                <Label>
+                                                    Dari akun (dompet)
+                                                </Label>
                                                 <Select
                                                     value={
                                                         simpleForm.data
@@ -387,7 +400,7 @@ export default function TransactionsCreate({
                                                     }
                                                     onValueChange={(value) =>
                                                         simpleForm.setData(
-                                                            'from_account_id',
+                                                            "from_account_id",
                                                             value,
                                                         )
                                                     }
@@ -426,7 +439,7 @@ export default function TransactionsCreate({
                                                     }
                                                     onValueChange={(value) =>
                                                         simpleForm.setData(
-                                                            'to_account_id',
+                                                            "to_account_id",
                                                             value,
                                                         )
                                                     }
@@ -467,7 +480,7 @@ export default function TransactionsCreate({
                                         value={simpleForm.data.description}
                                         onChange={(e) =>
                                             simpleForm.setData(
-                                                'description',
+                                                "description",
                                                 e.target.value,
                                             )
                                         }
@@ -476,128 +489,114 @@ export default function TransactionsCreate({
                                 </div>
 
                                 {/* Tag ke Project — hanya entity bisnis, hanya income/expense */}
-                                {isBusiness &&
-                                    simpleType !== 'transfer' && (
-                                        <div className="space-y-3 rounded-lg border border-dashed p-4">
-                                            <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-                                                Tag ke Project{' '}
-                                                <span className="normal-case">
-                                                    (opsional)
-                                                </span>
-                                            </p>
-                                            <div className="grid gap-3 sm:grid-cols-2">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="project-id">
-                                                        Project
-                                                    </Label>
-                                                    <Select
-                                                        value={
-                                                            simpleForm.data
-                                                                .project_id ||
-                                                            'none'
-                                                        }
-                                                        onValueChange={(v) => {
-                                                            const pid =
-                                                                v === 'none'
-                                                                    ? ''
-                                                                    : v;
-                                                            simpleForm.setData(
-                                                                'project_id',
-                                                                pid,
-                                                            );
-                                                            // Auto-fill client dari project yang dipilih
-                                                            if (pid) {
-                                                                const proj =
-                                                                    projects.find(
-                                                                        (p) =>
-                                                                            p.id ===
-                                                                            pid,
-                                                                    );
-                                                                if (
-                                                                    proj?.client_id
-                                                                ) {
-                                                                    simpleForm.setData(
-                                                                        'client_id',
-                                                                        proj.client_id,
-                                                                    );
-                                                                }
+                                {isBusiness && simpleType !== "transfer" && (
+                                    <div className="space-y-3 rounded-lg border border-dashed p-4">
+                                        <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+                                            Tag ke Project{" "}
+                                            <span className="normal-case">
+                                                (opsional)
+                                            </span>
+                                        </p>
+                                        <div className="grid gap-3 sm:grid-cols-2">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="project-id">
+                                                    Project
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        simpleForm.data
+                                                            .project_id ||
+                                                        "none"
+                                                    }
+                                                    onValueChange={(v) => {
+                                                        const pid =
+                                                            v === "none"
+                                                                ? ""
+                                                                : v;
+                                                        simpleForm.setData(
+                                                            "project_id",
+                                                            pid,
+                                                        );
+                                                        // Auto-fill client dari project yang dipilih
+                                                        if (pid) {
+                                                            const proj =
+                                                                projects.find(
+                                                                    (p) =>
+                                                                        p.id ===
+                                                                        pid,
+                                                                );
+                                                            if (
+                                                                proj?.client_id
+                                                            ) {
+                                                                simpleForm.setData(
+                                                                    "client_id",
+                                                                    proj.client_id,
+                                                                );
                                                             }
-                                                        }}
-                                                    >
-                                                        <SelectTrigger id="project-id">
-                                                            <SelectValue placeholder="Pilih project..." />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="none">
-                                                                <span className="text-muted-foreground">
-                                                                    Tanpa project
-                                                                </span>
-                                                            </SelectItem>
-                                                            {projects.map(
-                                                                (p) => (
-                                                                    <SelectItem
-                                                                        key={
-                                                                            p.id
-                                                                        }
-                                                                        value={
-                                                                            p.id
-                                                                        }
-                                                                    >
-                                                                        {p.name}
-                                                                    </SelectItem>
-                                                                ),
-                                                            )}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="client-id">
-                                                        Client
-                                                    </Label>
-                                                    <Select
-                                                        value={
-                                                            simpleForm.data
-                                                                .client_id ||
-                                                            'none'
                                                         }
-                                                        onValueChange={(v) =>
-                                                            simpleForm.setData(
-                                                                'client_id',
-                                                                v === 'none'
-                                                                    ? ''
-                                                                    : v,
-                                                            )
-                                                        }
-                                                    >
-                                                        <SelectTrigger id="client-id">
-                                                            <SelectValue placeholder="Pilih client..." />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="none">
-                                                                <span className="text-muted-foreground">
-                                                                    Tanpa client
-                                                                </span>
+                                                    }}
+                                                >
+                                                    <SelectTrigger id="project-id">
+                                                        <SelectValue placeholder="Pilih project..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">
+                                                            <span className="text-muted-foreground">
+                                                                Tanpa project
+                                                            </span>
+                                                        </SelectItem>
+                                                        {projects.map((p) => (
+                                                            <SelectItem
+                                                                key={p.id}
+                                                                value={p.id}
+                                                            >
+                                                                {p.name}
                                                             </SelectItem>
-                                                            {clients.map(
-                                                                (c) => (
-                                                                    <SelectItem
-                                                                        key={
-                                                                            c.id
-                                                                        }
-                                                                        value={
-                                                                            c.id
-                                                                        }
-                                                                    >
-                                                                        {c.name}
-                                                                    </SelectItem>
-                                                                ),
-                                                            )}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="client-id">
+                                                    Client
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        simpleForm.data
+                                                            .client_id || "none"
+                                                    }
+                                                    onValueChange={(v) =>
+                                                        simpleForm.setData(
+                                                            "client_id",
+                                                            v === "none"
+                                                                ? ""
+                                                                : v,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger id="client-id">
+                                                        <SelectValue placeholder="Pilih client..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">
+                                                            <span className="text-muted-foreground">
+                                                                Tanpa client
+                                                            </span>
+                                                        </SelectItem>
+                                                        {clients.map((c) => (
+                                                            <SelectItem
+                                                                key={c.id}
+                                                                value={c.id}
+                                                            >
+                                                                {c.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
+                                )}
 
                                 <div className="space-y-2">
                                     <Label htmlFor="attachment">
@@ -609,7 +608,7 @@ export default function TransactionsCreate({
                                         accept=".jpg,.jpeg,.png,.pdf"
                                         onChange={(e) =>
                                             simpleForm.setData(
-                                                'attachment',
+                                                "attachment",
                                                 e.target.files?.[0] ?? null,
                                             )
                                         }
@@ -629,8 +628,8 @@ export default function TransactionsCreate({
                                         disabled={simpleForm.processing}
                                     >
                                         {simpleForm.processing
-                                            ? 'Menyimpan...'
-                                            : 'Simpan Transaksi'}
+                                            ? "Menyimpan..."
+                                            : "Simpan Transaksi"}
                                     </Button>
                                 </div>
                             </form>
@@ -660,7 +659,7 @@ export default function TransactionsCreate({
                                             value={interEntityForm.data.date}
                                             onChange={(e) =>
                                                 interEntityForm.setData(
-                                                    'date',
+                                                    "date",
                                                     e.target.value,
                                                 )
                                             }
@@ -679,7 +678,7 @@ export default function TransactionsCreate({
                                             value={interEntityForm.data.amount}
                                             onChange={(e) =>
                                                 interEntityForm.setData(
-                                                    'amount',
+                                                    "amount",
                                                     e.target.value,
                                                 )
                                             }
@@ -696,7 +695,7 @@ export default function TransactionsCreate({
                                         }
                                         onValueChange={(value) =>
                                             interEntityForm.setData(
-                                                'from_account_id',
+                                                "from_account_id",
                                                 value,
                                             )
                                         }
@@ -720,12 +719,14 @@ export default function TransactionsCreate({
                                 <div className="space-y-2">
                                     <Label>Entity Tujuan</Label>
                                     <Select
-                                        value={interEntityForm.data.to_entity_id}
+                                        value={
+                                            interEntityForm.data.to_entity_id
+                                        }
                                         onValueChange={(value) => {
                                             interEntityForm.setData({
                                                 ...interEntityForm.data,
                                                 to_entity_id: value,
-                                                to_account_id: '',
+                                                to_account_id: "",
                                             });
                                         }}
                                     >
@@ -748,10 +749,12 @@ export default function TransactionsCreate({
                                 <div className="space-y-2">
                                     <Label>Ke Akun (entity tujuan)</Label>
                                     <Select
-                                        value={interEntityForm.data.to_account_id}
+                                        value={
+                                            interEntityForm.data.to_account_id
+                                        }
                                         onValueChange={(value) =>
                                             interEntityForm.setData(
-                                                'to_account_id',
+                                                "to_account_id",
                                                 value,
                                             )
                                         }
@@ -760,16 +763,16 @@ export default function TransactionsCreate({
                                             <SelectValue placeholder="Pilih akun tujuan" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {(selectedEntity?.accounts ?? []).map(
-                                                (account) => (
-                                                    <SelectItem
-                                                        key={account.id}
-                                                        value={account.id}
-                                                    >
-                                                        {account.name}
-                                                    </SelectItem>
-                                                ),
-                                            )}
+                                            {(
+                                                selectedEntity?.accounts ?? []
+                                            ).map((account) => (
+                                                <SelectItem
+                                                    key={account.id}
+                                                    value={account.id}
+                                                >
+                                                    {account.name}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -783,7 +786,7 @@ export default function TransactionsCreate({
                                         value={interEntityForm.data.description}
                                         onChange={(e) =>
                                             interEntityForm.setData(
-                                                'description',
+                                                "description",
                                                 e.target.value,
                                             )
                                         }
@@ -797,8 +800,8 @@ export default function TransactionsCreate({
                                         disabled={interEntityForm.processing}
                                     >
                                         {interEntityForm.processing
-                                            ? 'Menyimpan...'
-                                            : 'Transfer'}
+                                            ? "Menyimpan..."
+                                            : "Transfer"}
                                     </Button>
                                 </div>
                             </form>
@@ -812,7 +815,7 @@ export default function TransactionsCreate({
 
 TransactionsCreate.layout = {
     breadcrumbs: [
-        { title: 'Transaksi', href: '/transactions' },
-        { title: 'Catat Baru', href: '/transactions/create' },
+        { title: "Transaksi", href: "/transactions" },
+        { title: "Catat Baru", href: "/transactions/create" },
     ],
 };

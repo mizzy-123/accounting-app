@@ -17,6 +17,17 @@ declare module '@inertiajs/core' {
             entities: Entity[] | null;
             canCreateEntity: boolean;
             canCreatePersonalEntity: boolean;
+            saas: {
+                plan: string;
+                pricingEnabled: boolean;
+                registrationEnabled: boolean;
+                currentPlan: {
+                    name: string;
+                    price: number;
+                    currency: string;
+                    description: string;
+                };
+            };
             [key: string]: unknown;
         };
     }

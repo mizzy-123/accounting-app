@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from "@inertiajs/react";
 import {
     ArrowLeftRight,
     BookOpen,
@@ -17,12 +17,12 @@ import {
     Upload,
     Users,
     Wallet,
-} from 'lucide-react';
-import { EntitySwitcher } from '@/components/entity-switcher';
-import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
+} from "lucide-react";
+import { EntitySwitcher } from "@/components/entity-switcher";
+import AppLogo from "@/components/app-logo";
+import { NavFooter } from "@/components/nav-footer";
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
 import {
     Sidebar,
     SidebarContent,
@@ -32,21 +32,21 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarSeparator,
-} from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+} from "@/components/ui/sidebar";
+import { dashboard } from "@/routes";
+import type { NavItem } from "@/types";
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Repository',
+    //     href: 'https://github.com/laravel/react-starter-kit',
+    //     icon: FolderGit2,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits#react',
+    //     icon: BookOpen,
+    // },
 ];
 
 export function AppSidebar() {
@@ -55,100 +55,100 @@ export function AppSidebar() {
     // Nav items yang selalu muncul
     const mainNavItems: NavItem[] = [
         {
-            title: 'Dashboard',
+            title: "Dashboard",
             href: dashboard(),
             icon: LayoutGrid,
         },
         {
-            title: 'Transaksi',
-            href: '/transactions',
+            title: "Transaksi",
+            href: "/transactions",
             icon: ArrowLeftRight,
         },
         {
-            title: 'Laporan',
-            href: '/reports',
+            title: "Laporan",
+            href: "/reports",
             icon: ChartColumn,
         },
     ];
 
-    if (activeEntity?.type === 'personal' && activeEntity?.role !== 'viewer') {
+    if (activeEntity?.type === "personal" && activeEntity?.role !== "viewer") {
         mainNavItems.push({
-            title: 'Budget',
-            href: '/budgets',
+            title: "Budget",
+            href: "/budgets",
             icon: PiggyBank,
         });
     }
 
-    if (activeEntity?.role === 'owner') {
+    if (activeEntity?.role === "owner") {
         mainNavItems.push(
             {
-                title: 'Jurnal Penyesuaian',
-                href: '/journals/create',
+                title: "Jurnal Penyesuaian",
+                href: "/journals/create",
                 icon: NotebookPen,
             },
             {
-                title: 'Antrian Approval',
-                href: '/approvals',
+                title: "Antrian Approval",
+                href: "/approvals",
                 icon: ClipboardCheck,
             },
             {
-                title: 'Audit Log',
-                href: '/audit-logs',
+                title: "Audit Log",
+                href: "/audit-logs",
                 icon: ScrollText,
             },
         );
     }
 
-    if (activeEntity?.role !== 'viewer') {
+    if (activeEntity?.role !== "viewer") {
         mainNavItems.push(
             {
-                title: 'Transaksi Berulang',
-                href: '/recurring',
+                title: "Transaksi Berulang",
+                href: "/recurring",
                 icon: CalendarClock,
             },
             {
-                title: 'Import CSV',
-                href: '/import',
+                title: "Import CSV",
+                href: "/import",
                 icon: Upload,
             },
             {
-                title: 'Rule Kategori',
-                href: '/import/rules',
+                title: "Rule Kategori",
+                href: "/import/rules",
                 icon: Tags,
             },
         );
     }
 
     // Nav items khusus entity bisnis
-    if (activeEntity?.type === 'business') {
+    if (activeEntity?.type === "business") {
         mainNavItems.push(
             {
-                title: 'Clients',
-                href: '/clients',
+                title: "Clients",
+                href: "/clients",
                 icon: Building2,
             },
             {
-                title: 'Projects',
-                href: '/projects',
+                title: "Projects",
+                href: "/projects",
                 icon: Briefcase,
             },
             {
-                title: 'Invoice',
-                href: '/invoices',
+                title: "Invoice",
+                href: "/invoices",
                 icon: FileText,
             },
             {
-                title: 'Piutang',
-                href: '/invoices/receivables',
+                title: "Piutang",
+                href: "/invoices/receivables",
                 icon: Wallet,
             },
         );
     }
 
     // Manajemen tim — hanya owner entity bisnis
-    if (activeEntity?.type === 'business' && activeEntity?.role === 'owner') {
+    if (activeEntity?.type === "business" && activeEntity?.role === "owner") {
         mainNavItems.push({
-            title: 'Manajemen Tim',
+            title: "Manajemen Tim",
             href: `/entity/${activeEntity.id}/team`,
             icon: Users,
         });

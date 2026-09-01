@@ -6,6 +6,7 @@ use App\Models\Entity;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Laravel\Fortify\Features;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -80,6 +81,12 @@ class HandleInertiaRequests extends Middleware
             'entities' => $entities,
             'canCreateEntity' => (bool) $user,
             'canCreatePersonalEntity' => $user ? ! $user->ownsPersonalEntity() : false,
+            'saas' => [
+                'plan' => config('saas.plan'),
+                'pricingEnabled' => config('saas.pricing_enabled'),
+                'registrationEnabled' => Features::enabled(Features::registration()),
+                'currentPlan' => config('saas.plans.'.config('saas.plan')),
+            ],
         ];
     }
 
