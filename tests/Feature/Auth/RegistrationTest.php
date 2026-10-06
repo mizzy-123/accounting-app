@@ -50,8 +50,8 @@ test('registration provisions personal and business entities with chart of accou
         ->and($business->name)->toBe('Toko SaaS')
         ->and($user->isOwnerOf($personal))->toBeTrue()
         ->and($user->isOwnerOf($business))->toBeTrue()
-        ->and($personal->accounts()->count())->toBe(11)
-        ->and($business->accounts()->count())->toBe(11);
+        ->and($personal->accounts()->count())->toBe(16)
+        ->and($business->accounts()->count())->toBe(16);
 
     expect(session('active_entity_id'))->toBe($personal->id);
 });

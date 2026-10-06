@@ -202,6 +202,7 @@ class TransactionService
                 'description' => $data['description'] ?? 'Jurnal penyesuaian manual',
                 'type' => 'adjustment',
                 'amount' => $totalAmount,
+                'reference' => $data['reference'] ?? null,
             ]);
 
             $this->createBalancedEntries($transaction, $normalizedEntries);

@@ -1,11 +1,13 @@
 import { Link, usePage } from "@inertiajs/react";
 import {
     ArrowLeftRight,
+    BookMarked,
     BookOpen,
     Briefcase,
     Building2,
     CalendarClock,
     ChartColumn,
+    Landmark,
     ClipboardCheck,
     FileText,
     FolderGit2,
@@ -68,6 +70,16 @@ export function AppSidebar() {
             title: "Laporan",
             href: "/reports",
             icon: ChartColumn,
+        },
+        {
+            title: "Chart of Accounts",
+            href: "/accounts",
+            icon: BookMarked,
+        },
+        {
+            title: "Aset Tetap",
+            href: "/assets",
+            icon: Landmark,
         },
     ];
 

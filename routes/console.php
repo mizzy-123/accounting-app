@@ -9,3 +9,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('accounting:process-recurring')->daily();
+Schedule::command('accounting:process-depreciation')
+    ->monthlyOn(1, '02:00')
+    ->withoutOverlapping(120);

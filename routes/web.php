@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BankImportController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\FixedAssetController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ManualJournalController;
 use App\Http\Controllers\ProjectController;
@@ -26,6 +28,22 @@ Route::middleware(['auth', 'verified', 'entity.access'])->group(function () {
     Route::post('/entities', [EntityController::class, 'store'])->name('entities.store');
     Route::post('/entity/{entity}/switch', [EntityController::class, 'switch'])
         ->name('entity.switch');
+
+    // Chart of accounts (sistem + custom)
+    Route::get('/accounts', [AccountController::class, 'index'])->name('accounts.index');
+    Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
+    Route::patch('/accounts/{account}', [AccountController::class, 'update'])->name('accounts.update');
+    Route::delete('/accounts/{account}', [AccountController::class, 'destroy'])->name('accounts.destroy');
+
+    // Aset tetap & penyusutan
+    Route::get('/assets', [FixedAssetController::class, 'index'])->name('assets.index');
+    Route::post('/assets', [FixedAssetController::class, 'store'])->name('assets.store');
+    Route::patch('/assets/{fixedAsset}', [FixedAssetController::class, 'update'])->name('assets.update');
+    Route::delete('/assets/{fixedAsset}', [FixedAssetController::class, 'destroy'])->name('assets.destroy');
+    Route::post('/assets/{fixedAsset}/depreciate', [FixedAssetController::class, 'depreciate'])
+        ->name('assets.depreciate');
+    Route::post('/assets/{fixedAsset}/dispose', [FixedAssetController::class, 'dispose'])
+        ->name('assets.dispose');
 
     // Transactions
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');

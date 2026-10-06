@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $type
  * @property bool $is_active
+ * @property bool $is_system
  */
 class Account extends Model
 {
@@ -23,12 +24,14 @@ class Account extends Model
         'name',
         'type',
         'is_active',
+        'is_system',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'is_system' => 'boolean',
         ];
     }
 

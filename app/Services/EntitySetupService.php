@@ -24,13 +24,18 @@ class EntitySetupService
             ['name' => 'Bank', 'type' => 'asset'],
             ['name' => 'E-Wallet', 'type' => 'asset'],
             ['name' => 'Piutang', 'type' => 'asset'],
+            ['name' => 'Aset Tetap', 'type' => 'asset'],
+            ['name' => 'Akumulasi Penyusutan', 'type' => 'asset'],
             ['name' => 'Hutang', 'type' => 'liability'],
             ['name' => 'Hutang Kartu Kredit', 'type' => 'liability'],
             ['name' => 'Hutang Usaha', 'type' => 'liability'],
             ['name' => 'Modal', 'type' => 'equity'],
             ['name' => 'Owner Draw', 'type' => 'equity'],
             ['name' => 'Pendapatan', 'type' => 'revenue'],
+            ['name' => 'Pendapatan Pelepasan Aset', 'type' => 'revenue'],
             ['name' => 'Beban', 'type' => 'expense'],
+            ['name' => 'Beban Penyusutan', 'type' => 'expense'],
+            ['name' => 'Kerugian Pelepasan Aset', 'type' => 'expense'],
         ];
 
         foreach ($accounts as $account) {
@@ -42,6 +47,7 @@ class EntitySetupService
                 [
                     'type' => $account['type'],
                     'is_active' => true,
+                    'is_system' => true,
                 ],
             );
         }

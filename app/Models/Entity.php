@@ -107,4 +107,9 @@ class Entity extends Model
     {
         return $this->hasMany(Budget::class);
     }
+
+    public function fixedAssets(): HasMany
+    {
+        return $this->hasMany(FixedAsset::class);
+    }
 }

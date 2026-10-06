@@ -82,7 +82,7 @@ test('new entity gets default chart of accounts and categories', function () {
 
     $entity = Entity::query()->where('name', 'Startup XYZ')->firstOrFail();
 
-    expect($entity->accounts()->count())->toBe(11)
+    expect($entity->accounts()->count())->toBe(16)
         ->and($entity->categories()->count())->toBe(8)
         ->and($entity->accounts()->where('name', 'Kas')->exists())->toBeTrue();
 });
