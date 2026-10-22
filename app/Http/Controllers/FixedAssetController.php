@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\DisposeFixedAssetRequest;
 use App\Http\Requests\PostDepreciationRequest;
+use App\Http\Requests\RecognizeFixedAssetRequest;
 use App\Http\Requests\StoreFixedAssetRequest;
 use App\Http\Requests\UpdateFixedAssetRequest;
 use App\Models\Account;
 use App\Models\FixedAsset;
+use App\Models\Transaction;
 use App\Services\DepreciationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,10 +27,18 @@ class FixedAssetController extends Controller
         $entity = $this->activeEntity($request);
         $this->authorize('viewAny', [FixedAsset::class, $entity]);
 
+        $recognizedIds = Transaction::query()
+            ->forEntity($entity)
+            ->where('reference', 'like', 'asset-acquisition:%')
+            ->pluck('reference')
+            ->map(fn (string $reference) => str($reference)->after('asset-acquisition:')->toString())
+            ->all();
+
         $assets = FixedAsset::query()
             ->forEntity($entity)
             ->with(['assetAccount:id,name', 'accumulatedAccount:id,name', 'expenseAccount:id,name'])
             ->withCount('depreciationEntries')
+            ->withMax('depreciationEntries', 'period')
             ->orderBy('acquisition_date', 'desc')
             ->orderBy('name')
             ->get()
@@ -45,9 +55,13 @@ class FixedAssetController extends Controller
                 'status' => $asset->status,
                 'notes' => $asset->notes,
                 'periods_posted' => $asset->depreciation_entries_count,
+                'last_posted_period' => $asset->depreciation_entries_max_period
+                    ? Carbon::parse($asset->depreciation_entries_max_period)->format('Y-m')
+                    : null,
                 'asset_account' => $asset->assetAccount?->name,
                 'accumulated_account' => $asset->accumulatedAccount?->name,
                 'expense_account' => $asset->expenseAccount?->name,
+                'acquisition_posted' => in_array($asset->id, $recognizedIds, true),
             ]);
 
         $accounts = Account::query()
@@ -121,17 +135,27 @@ class FixedAssetController extends Controller
 
         $this->authorize('depreciate', $fixedAsset);
 
+        $through = $request->validated('through');
+
         $posted = $this->depreciation->postThrough(
             $fixedAsset,
             $request->user(),
-            $request->validated('through'),
+            $through,
         );
 
-        $message = $posted === 0
-            ? 'Tidak ada periode baru yang perlu dicatat.'
-            : "{$posted} periode penyusutan berhasil dicatat.";
+        if ($posted === 0) {
+            Inertia::flash('toast', [
+                'type' => 'info',
+                'message' => 'Penyusutan sampai '.$this->periodLabel($through).' sudah tercatat. Pilih bulan yang lebih baru untuk mencatat periode berikutnya.',
+            ]);
+        } else {
+            Inertia::flash('toast', [
+                'type' => 'success',
+                'message' => "{$posted} periode penyusutan berhasil dicatat.",
+            ]);
+        }
 
-        return back()->with('success', $message);
+        return back();
     }
 
     public function dispose(DisposeFixedAssetRequest $request, FixedAsset $fixedAsset): RedirectResponse
@@ -151,5 +175,50 @@ class FixedAssetController extends Controller
         }
 
         return back()->with('success', 'Aset tetap berhasil dilepas.');
+    }
+
+    public function recognize(RecognizeFixedAssetRequest $request, FixedAsset $fixedAsset): RedirectResponse
+    {
+        $entity = $this->activeEntity($request);
+
+        if ($fixedAsset->entity_id !== $entity->id) {
+            abort(404);
+        }
+
+        $this->authorize('recognize', $fixedAsset);
+
+        try {
+            $this->depreciation->recognize(
+                $fixedAsset,
+                $request->user(),
+                $request->validated('payment_account_id'),
+            );
+        } catch (InvalidArgumentException $exception) {
+            return back()->withErrors(['asset' => $exception->getMessage()]);
+        }
+
+        return back()->with('success', 'Jurnal perolehan aset berhasil dicatat.');
+    }
+
+    private function periodLabel(string $yearMonth): string
+    {
+        $months = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember',
+        ];
+
+        $date = Carbon::createFromFormat('!Y-m', $yearMonth);
+
+        return $months[(int) $date->month].' '.$date->year;
     }
 }

@@ -17,6 +17,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { MoneyInput } from '@/components/money-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -92,7 +93,7 @@ function CreateRecurringDialog({ formOptions }: { formOptions: FormOptions }) {
                     Tambah Template
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+            <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>Transaksi Berulang</DialogTitle>
                     <DialogDescription>
@@ -141,14 +142,10 @@ function CreateRecurringDialog({ formOptions }: { formOptions: FormOptions }) {
 
                     <div className="space-y-2">
                         <Label>Jumlah (Rp)</Label>
-                        <Input
-                            type="number"
-                            min="0.01"
-                            step="0.01"
+                        <MoneyInput
                             value={data.amount}
-                            onChange={(e) =>
-                                setData('amount', e.target.value)
-                            }
+                            onValueChange={(value) => setData('amount', value)}
+                            placeholder="1.000.000"
                             required
                         />
                     </div>

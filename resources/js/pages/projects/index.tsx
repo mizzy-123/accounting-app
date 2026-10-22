@@ -38,6 +38,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { MoneyInput } from '@/components/money-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -211,15 +212,12 @@ function ProjectFormDialog({
                             <span className="text-muted-foreground absolute top-2.5 left-3 text-sm">
                                 Rp
                             </span>
-                            <Input
+                            <MoneyInput
                                 id="proj-budget"
-                                type="number"
-                                min="0"
-                                step="1000"
                                 className="pl-10"
-                                placeholder="50000000"
+                                placeholder="50.000.000"
                                 value={data.budget ?? ''}
-                                onChange={(e) => setData('budget', e.target.value)}
+                                onValueChange={(value) => setData('budget', value)}
                             />
                         </div>
                         {errors.budget && (

@@ -9,6 +9,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { MoneyInput } from '@/components/money-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -264,7 +265,7 @@ export default function InvoicesCreate({
                                     {data.items.map((item, index) => (
                                         <div
                                             key={index}
-                                            className="grid grid-cols-[1fr_80px_120px_40px] items-start gap-2"
+                                            className="grid grid-cols-[minmax(0,1fr)_5rem_10rem_2.5rem] items-start gap-2"
                                         >
                                             <Input
                                                 placeholder="Nama item"
@@ -293,18 +294,11 @@ export default function InvoicesCreate({
                                                 }
                                                 required
                                             />
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
+                                            <MoneyInput
                                                 placeholder="Harga"
                                                 value={item.price}
-                                                onChange={(e) =>
-                                                    updateItem(
-                                                        index,
-                                                        'price',
-                                                        e.target.value,
-                                                    )
+                                                onValueChange={(value) =>
+                                                    updateItem(index, 'price', value)
                                                 }
                                                 required
                                             />
@@ -332,15 +326,13 @@ export default function InvoicesCreate({
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="discount">Diskon (Rp)</Label>
-                                    <Input
+                                    <MoneyInput
                                         id="discount"
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
                                         value={data.discount}
-                                        onChange={(e) =>
-                                            setData('discount', e.target.value)
+                                        onValueChange={(value) =>
+                                            setData('discount', value)
                                         }
+                                        placeholder="0"
                                     />
                                 </div>
                                 <div className="space-y-2">

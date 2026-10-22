@@ -8,6 +8,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { MoneyInput } from "@/components/money-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -272,18 +273,13 @@ export default function TransactionsCreate({
                                         <Label htmlFor="amount">
                                             Jumlah (Rp)
                                         </Label>
-                                        <Input
+                                        <MoneyInput
                                             id="amount"
-                                            type="number"
-                                            min="0.01"
-                                            step="0.01"
                                             value={simpleForm.data.amount}
-                                            onChange={(e) =>
-                                                simpleForm.setData(
-                                                    "amount",
-                                                    e.target.value,
-                                                )
+                                            onValueChange={(value) =>
+                                                simpleForm.setData("amount", value)
                                             }
+                                            placeholder="1.000.000"
                                             required
                                         />
                                         {simpleForm.errors.amount && (
@@ -670,18 +666,16 @@ export default function TransactionsCreate({
                                         <Label htmlFor="ie-amount">
                                             Jumlah (Rp)
                                         </Label>
-                                        <Input
+                                        <MoneyInput
                                             id="ie-amount"
-                                            type="number"
-                                            min="0.01"
-                                            step="0.01"
                                             value={interEntityForm.data.amount}
-                                            onChange={(e) =>
+                                            onValueChange={(value) =>
                                                 interEntityForm.setData(
                                                     "amount",
-                                                    e.target.value,
+                                                    value,
                                                 )
                                             }
+                                            placeholder="1.000.000"
                                             required
                                         />
                                     </div>

@@ -55,6 +55,60 @@ test('owner can create a fixed asset and post acquisition journal', function () 
         ->and($acquisition->status)->toBe('approved')
         ->and($acquisition->amount)->toBe('12000000.00')
         ->and($acquisition->reference)->toBe("asset-acquisition:{$asset->id}");
+
+    $entries = $acquisition->entries()->get()->keyBy('account_id');
+
+    expect($entries[$accounts['Aset Tetap']->id]->debit)->toBe('12000000.00')
+        ->and($entries[$accounts['Kas']->id]->kredit)->toBe('12000000.00');
+});
+
+test('an owned asset is recorded against equity', function () {
+    ['owner' => $owner, 'entity' => $entity, 'accounts' => $accounts] = depreciationSetup();
+
+    $this->actingAs($owner)
+        ->withSession(['active_entity_id' => $entity->id])
+        ->post(route('assets.store'), [
+            'name' => 'HP Xiaomi',
+            'asset_account_id' => $accounts['Aset Tetap']->id,
+            'accumulated_account_id' => $accounts['Akumulasi Penyusutan']->id,
+            'expense_account_id' => $accounts['Beban Penyusutan']->id,
+            'payment_account_id' => $accounts['Modal']->id,
+            'acquisition_date' => '2026-09-21',
+            'cost' => 10000000,
+            'residual_value' => 4000000,
+            'useful_life_months' => 48,
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect();
+
+    $asset = FixedAsset::query()->where('name', 'HP Xiaomi')->firstOrFail();
+    $acquisition = Transaction::query()
+        ->where('reference', "asset-acquisition:{$asset->id}")
+        ->firstOrFail();
+    $entries = $acquisition->entries()->get()->keyBy('account_id');
+
+    expect($entries[$accounts['Aset Tetap']->id]->debit)->toBe('10000000.00')
+        ->and($entries[$accounts['Modal']->id]->kredit)->toBe('10000000.00');
+});
+
+test('a fixed asset cannot be saved without an offset account', function () {
+    ['owner' => $owner, 'entity' => $entity, 'accounts' => $accounts] = depreciationSetup();
+
+    $this->actingAs($owner)
+        ->withSession(['active_entity_id' => $entity->id])
+        ->post(route('assets.store'), [
+            'name' => 'HP',
+            'asset_account_id' => $accounts['Aset Tetap']->id,
+            'accumulated_account_id' => $accounts['Akumulasi Penyusutan']->id,
+            'expense_account_id' => $accounts['Beban Penyusutan']->id,
+            'acquisition_date' => '2026-09-21',
+            'cost' => 10000000,
+            'residual_value' => 0,
+            'useful_life_months' => 48,
+        ])
+        ->assertSessionHasErrors('payment_account_id');
+
+    expect(FixedAsset::query()->where('name', 'HP')->exists())->toBeFalse();
 });
 
 test('owner can post straight line depreciation for missing months', function () {
@@ -67,6 +121,7 @@ test('owner can post straight line depreciation for missing months', function ()
             'asset_account_id' => $accounts['Aset Tetap']->id,
             'accumulated_account_id' => $accounts['Akumulasi Penyusutan']->id,
             'expense_account_id' => $accounts['Beban Penyusutan']->id,
+            'payment_account_id' => $accounts['Modal']->id,
             'acquisition_date' => '2026-01-01',
             'cost' => 1200000,
             'residual_value' => 0,
@@ -80,7 +135,9 @@ test('owner can post straight line depreciation for missing months', function ()
         ->post(route('assets.depreciate', $asset), [
             'through' => '2026-03',
         ])
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertInertiaFlash('toast.type', 'success')
+        ->assertInertiaFlash('toast.message', '3 periode penyusutan berhasil dicatat.');
 
     $asset->refresh();
 
@@ -93,7 +150,9 @@ test('owner can post straight line depreciation for missing months', function ()
         ->post(route('assets.depreciate', $asset), [
             'through' => '2026-03',
         ])
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertInertiaFlash('toast.type', 'info')
+        ->assertInertiaFlash('toast.message', 'Penyusutan sampai Maret 2026 sudah tercatat. Pilih bulan yang lebih baru untuk mencatat periode berikutnya.');
 
     expect($asset->fresh()->depreciationEntries()->count())->toBe(3);
 });
@@ -108,6 +167,7 @@ test('depreciation stops at residual value', function () {
             'asset_account_id' => $accounts['Aset Tetap']->id,
             'accumulated_account_id' => $accounts['Akumulasi Penyusutan']->id,
             'expense_account_id' => $accounts['Beban Penyusutan']->id,
+            'payment_account_id' => $accounts['Modal']->id,
             'acquisition_date' => '2026-01-01',
             'cost' => 300000,
             'residual_value' => 0,
@@ -139,6 +199,7 @@ test('owner can dispose an asset and record a loss', function () {
             'asset_account_id' => $accounts['Aset Tetap']->id,
             'accumulated_account_id' => $accounts['Akumulasi Penyusutan']->id,
             'expense_account_id' => $accounts['Beban Penyusutan']->id,
+            'payment_account_id' => $accounts['Modal']->id,
             'acquisition_date' => '2026-01-01',
             'cost' => 300000,
             'residual_value' => 0,
@@ -194,6 +255,7 @@ test('owner can dispose a fully depreciated asset', function () {
             'asset_account_id' => $accounts['Aset Tetap']->id,
             'accumulated_account_id' => $accounts['Akumulasi Penyusutan']->id,
             'expense_account_id' => $accounts['Beban Penyusutan']->id,
+            'payment_account_id' => $accounts['Modal']->id,
             'acquisition_date' => '2026-01-01',
             'cost' => 300000,
             'residual_value' => 0,
@@ -232,6 +294,7 @@ test('scheduled depreciation posts missing months for active assets', function (
             'asset_account_id' => $accounts['Aset Tetap']->id,
             'accumulated_account_id' => $accounts['Akumulasi Penyusutan']->id,
             'expense_account_id' => $accounts['Beban Penyusutan']->id,
+            'payment_account_id' => $accounts['Modal']->id,
             'acquisition_date' => '2026-01-01',
             'cost' => 1200000,
             'residual_value' => 0,
@@ -245,4 +308,37 @@ test('scheduled depreciation posts missing months for active assets', function (
 
     expect($asset->depreciationEntries()->count())->toBe(3)
         ->and($asset->accumulatedAmount())->toBe('300000.00');
+});
+
+test('an asset saved without a journal can be recognized later', function () {
+    ['owner' => $owner, 'entity' => $entity, 'accounts' => $accounts] = depreciationSetup();
+
+    $asset = FixedAsset::create([
+        'entity_id' => $entity->id,
+        'name' => 'Motor Lama',
+        'asset_account_id' => $accounts['Aset Tetap']->id,
+        'accumulated_account_id' => $accounts['Akumulasi Penyusutan']->id,
+        'expense_account_id' => $accounts['Beban Penyusutan']->id,
+        'acquisition_date' => '2026-01-01',
+        'cost' => 8000000,
+        'residual_value' => 0,
+        'useful_life_months' => 48,
+        'method' => 'straight_line',
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($owner)
+        ->withSession(['active_entity_id' => $entity->id])
+        ->post(route('assets.recognize', $asset), [
+            'payment_account_id' => $accounts['Modal']->id,
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect();
+
+    $acquisition = Transaction::query()
+        ->where('reference', "asset-acquisition:{$asset->id}")
+        ->first();
+
+    expect($acquisition)->not->toBeNull()
+        ->and($asset->fresh()->payment_account_id)->toBe($accounts['Modal']->id);
 });

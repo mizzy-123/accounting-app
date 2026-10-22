@@ -21,7 +21,7 @@ class DepreciationService
      *     asset_account_id: string,
      *     accumulated_account_id: string,
      *     expense_account_id: string,
-     *     payment_account_id?: string|null,
+     *     payment_account_id: string,
      *     acquisition_date: string,
      *     cost: numeric-string|float|int,
      *     residual_value: numeric-string|float|int,
@@ -38,7 +38,7 @@ class DepreciationService
                 'asset_account_id' => $data['asset_account_id'],
                 'accumulated_account_id' => $data['accumulated_account_id'],
                 'expense_account_id' => $data['expense_account_id'],
-                'payment_account_id' => $data['payment_account_id'] ?? null,
+                'payment_account_id' => $data['payment_account_id'],
                 'acquisition_date' => $data['acquisition_date'],
                 'cost' => $data['cost'],
                 'residual_value' => $data['residual_value'],
@@ -48,9 +48,7 @@ class DepreciationService
                 'notes' => $data['notes'] ?? null,
             ]);
 
-            if (! empty($data['payment_account_id'])) {
-                $this->postAcquisition($asset, $entity, $user);
-            }
+            $this->postAcquisition($asset, $entity, $user);
 
             return $asset->fresh(['assetAccount', 'accumulatedAccount', 'expenseAccount']);
         });
@@ -65,7 +63,7 @@ class DepreciationService
             throw new InvalidArgumentException('Aset ini sudah tidak aktif untuk disusutkan.');
         }
 
-        $through = CarbonImmutable::createFromFormat('Y-m', $throughYm)->startOfMonth();
+        $through = CarbonImmutable::createFromFormat('!Y-m', $throughYm)->startOfMonth();
         $cursor = $asset->acquisition_date->toImmutable()->startOfMonth();
         $posted = 0;
 
@@ -95,6 +93,25 @@ class DepreciationService
         }
 
         return $posted;
+    }
+
+    /**
+     * Catat jurnal perolehan untuk aset yang tersimpan sebelum pencatatan wajib.
+     */
+    public function recognize(FixedAsset $asset, User $user, string $offsetAccountId): FixedAsset
+    {
+        $reference = "asset-acquisition:{$asset->id}";
+
+        if (Transaction::query()->where('reference', $reference)->exists()) {
+            throw new InvalidArgumentException('Jurnal perolehan aset ini sudah tercatat.');
+        }
+
+        return DB::transaction(function () use ($asset, $user, $offsetAccountId): FixedAsset {
+            $asset->update(['payment_account_id' => $offsetAccountId]);
+            $this->postAcquisition($asset->fresh(), $asset->entity, $user);
+
+            return $asset->fresh();
+        });
     }
 
     /**
@@ -229,6 +246,10 @@ class DepreciationService
 
     private function postAcquisition(FixedAsset $asset, Entity $entity, User $user): void
     {
+        if ($asset->payment_account_id === null) {
+            throw new InvalidArgumentException('Akun lawan jurnal wajib dipilih.');
+        }
+
         $transaction = $this->transactions->createAdjustment($entity, $user, [
             'date' => $asset->acquisition_date->toDateString(),
             'description' => "Perolehan aset {$asset->name}",

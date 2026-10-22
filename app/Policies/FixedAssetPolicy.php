@@ -39,6 +39,11 @@ class FixedAssetPolicy
         return $this->update($user, $fixedAsset);
     }
 
+    public function recognize(User $user, FixedAsset $fixedAsset): bool
+    {
+        return $this->update($user, $fixedAsset);
+    }
+
     private function hasEntityAccess(User $user, Entity $entity): bool
     {
         if (! $user->hasAccessTo($entity)) {

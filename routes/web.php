@@ -44,6 +44,8 @@ Route::middleware(['auth', 'verified', 'entity.access'])->group(function () {
         ->name('assets.depreciate');
     Route::post('/assets/{fixedAsset}/dispose', [FixedAssetController::class, 'dispose'])
         ->name('assets.dispose');
+    Route::post('/assets/{fixedAsset}/recognize', [FixedAssetController::class, 'recognize'])
+        ->name('assets.recognize');
 
     // Transactions
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');

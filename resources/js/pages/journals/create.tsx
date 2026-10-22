@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Plus, Trash2 } from 'lucide-react';
+import { MoneyInput } from '@/components/money-input';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -17,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { formatRupiah } from '@/lib/rupiah';
 import type { AccountOption } from '@/types';
 
 type JournalRow = {
@@ -146,7 +148,7 @@ export default function JournalsCreate({ accounts }: Props) {
                             </div>
 
                             <div className="space-y-3">
-                                <div className="grid grid-cols-[1fr_120px_120px_40px] gap-2 text-xs font-medium">
+                                <div className="grid grid-cols-[minmax(0,1fr)_10rem_10rem_2.5rem] gap-2 text-xs font-medium">
                                     <span>Akun</span>
                                     <span className="text-right">Debit</span>
                                     <span className="text-right">Kredit</span>
@@ -156,7 +158,7 @@ export default function JournalsCreate({ accounts }: Props) {
                                 {data.entries.map((entry, index) => (
                                     <div
                                         key={index}
-                                        className="grid grid-cols-[1fr_120px_120px_40px] items-start gap-2"
+                                        className="grid grid-cols-[minmax(0,1fr)_10rem_10rem_2.5rem] items-start gap-2"
                                     >
                                         <Select
                                             value={entry.account_id}
@@ -183,32 +185,22 @@ export default function JournalsCreate({ accounts }: Props) {
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        <Input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
+                                        <MoneyInput
                                             placeholder="0"
                                             value={entry.debit}
-                                            onChange={(e) =>
-                                                updateEntry(
-                                                    index,
-                                                    'debit',
-                                                    e.target.value,
-                                                )
+                                            onValueChange={(value) =>
+                                                updateEntry(index, 'debit', value)
                                             }
                                             className="text-right"
                                         />
-                                        <Input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
+                                        <MoneyInput
                                             placeholder="0"
                                             value={entry.kredit}
-                                            onChange={(e) =>
+                                            onValueChange={(value) =>
                                                 updateEntry(
                                                     index,
                                                     'kredit',
-                                                    e.target.value,
+                                                    value,
                                                 )
                                             }
                                             className="text-right"
@@ -244,8 +236,8 @@ export default function JournalsCreate({ accounts }: Props) {
                                         : 'border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400'
                                 }`}
                             >
-                                Total Debit: {totalDebit.toFixed(2)} · Total
-                                Kredit: {totalKredit.toFixed(2)}
+                                Total Debit: {formatRupiah(totalDebit.toFixed(2))} · Total
+                                Kredit: {formatRupiah(totalKredit.toFixed(2))}
                                 {isBalanced
                                     ? ' · Seimbang'
                                     : ' · Belum seimbang'}

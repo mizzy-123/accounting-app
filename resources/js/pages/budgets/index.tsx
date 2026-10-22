@@ -17,6 +17,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { MoneyInput } from '@/components/money-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -155,12 +156,10 @@ function CreateBudgetDialog({
                     </div>
                     <div className="space-y-2">
                         <Label>Jumlah</Label>
-                        <Input
-                            type="number"
-                            min="0"
-                            step="1000"
+                        <MoneyInput
                             value={data.amount}
-                            onChange={(e) => setData('amount', e.target.value)}
+                            onValueChange={(value) => setData('amount', value)}
+                            placeholder="1.000.000"
                             required
                         />
                         {errors.amount && (
