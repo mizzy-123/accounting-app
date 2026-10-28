@@ -24,7 +24,6 @@ class CreateNewUser implements CreatesNewUsers
         Validator::make($input, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
-            'business_name' => ['nullable', 'string', 'max:255'],
         ])->validate();
 
         return DB::transaction(function () use ($input): User {
@@ -34,10 +33,7 @@ class CreateNewUser implements CreatesNewUsers
                 'password' => $input['password'],
             ]);
 
-            app(UserOnboardingService::class)->provision(
-                $user,
-                $input['business_name'] ?? null,
-            );
+            app(UserOnboardingService::class)->provision($user);
 
             return $user;
         });

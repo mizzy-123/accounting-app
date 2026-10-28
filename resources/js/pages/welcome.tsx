@@ -63,12 +63,12 @@ export default function Welcome() {
                     <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
                         <div className="font-semibold">{name}</div>
                         <nav className="flex items-center gap-3">
-                            {auth.user ? (
+                        {auth.user ? (
                                 <Button asChild>
                                     <Link href={dashboard()}>Dashboard</Link>
                                 </Button>
-                            ) : (
-                                <>
+                        ) : (
+                            <>
                                     <Button variant="ghost" asChild>
                                         <Link href={login()}>Masuk</Link>
                                     </Button>
@@ -76,12 +76,12 @@ export default function Welcome() {
                                         <Button asChild>
                                             <Link href={register()}>
                                                 Daftar gratis
-                                            </Link>
+                                </Link>
                                         </Button>
                                     )}
-                                </>
-                            )}
-                        </nav>
+                            </>
+                        )}
+                    </nav>
                     </div>
                 </header>
 
@@ -93,7 +93,7 @@ export default function Welcome() {
                         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
                             Kelola keuangan pribadi & bisnis dalam satu
                             platform
-                        </h1>
+                            </h1>
                         <p className="text-muted-foreground mt-4 text-lg">
                             Software akuntansi berbasis double-entry dengan
                             multi-entity, tim, invoice, laporan, dan approval
@@ -164,9 +164,9 @@ export default function Welcome() {
                                         >
                                             <Check className="text-primary size-4 shrink-0" />
                                             {item}
-                                        </li>
+                                </li>
                                     ))}
-                                </ul>
+                            </ul>
                                 {!auth.user && saas?.registrationEnabled && (
                                     <Button className="w-full" asChild>
                                         <Link href={register()}>
@@ -177,7 +177,7 @@ export default function Welcome() {
                             </CardContent>
                         </Card>
                     </section>
-                </main>
+                    </main>
             </div>
         </>
     );

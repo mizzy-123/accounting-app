@@ -10,17 +10,12 @@ class UserOnboardingService
     public function __construct(private EntityService $entityService) {}
 
     /**
-     * Siapkan workspace default untuk user SaaS baru.
+     * Siapkan workspace pribadi. Entity bisnis dibuat nanti dari aplikasi.
      */
-    public function provision(User $user, ?string $businessName = null): void
+    public function provision(User $user): void
     {
-        DB::transaction(function () use ($user, $businessName): void {
+        DB::transaction(function () use ($user): void {
             $this->entityService->createEntity($user, 'Personal', 'personal');
-            $this->entityService->createEntity(
-                $user,
-                $businessName ?: 'Bisnis Saya',
-                'business',
-            );
         });
     }
 }

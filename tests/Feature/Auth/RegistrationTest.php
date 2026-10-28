@@ -28,46 +28,49 @@ test('new users can register', function () {
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
-test('registration provisions personal and business entities with chart of accounts', function () {
+test('registration provisions only a personal entity', function () {
     $this->post(route('register.store'), [
         'name' => 'SaaS User',
         'email' => 'saas@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-        'business_name' => 'Toko SaaS',
     ])->assertRedirect();
 
     $user = User::query()->where('email', 'saas@example.com')->firstOrFail();
 
-    expect($user->entities)->toHaveCount(2);
+    expect($user->entities)->toHaveCount(1);
 
     $personal = $user->entities()->where('entities.type', 'personal')->first();
-    $business = $user->entities()->where('entities.type', 'business')->first();
 
     expect($personal)->not->toBeNull()
         ->and($personal->name)->toBe('Personal')
-        ->and($business)->not->toBeNull()
-        ->and($business->name)->toBe('Toko SaaS')
+        ->and($user->entities()->where('entities.type', 'business')->exists())->toBeFalse()
         ->and($user->isOwnerOf($personal))->toBeTrue()
-        ->and($user->isOwnerOf($business))->toBeTrue()
-        ->and($personal->accounts()->count())->toBe(16)
-        ->and($business->accounts()->count())->toBe(16);
+        ->and($personal->accounts()->count())->toBe(16);
 
     expect(session('active_entity_id'))->toBe($personal->id);
 });
 
-test('registration uses default business name when omitted', function () {
+test('registered user can create a business entity later', function () {
     $this->post(route('register.store'), [
-        'name' => 'Default Biz User',
-        'email' => 'default@example.com',
+        'name' => 'Later Biz User',
+        'email' => 'later@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
     ]);
 
-    $user = User::query()->where('email', 'default@example.com')->firstOrFail();
+    $this->post(route('entities.store'), [
+        'name' => 'Toko SaaS',
+        'type' => 'business',
+    ])->assertRedirect(route('dashboard'));
+
+    $user = User::query()->where('email', 'later@example.com')->firstOrFail();
     $business = $user->entities()->where('entities.type', 'business')->first();
 
-    expect($business?->name)->toBe('Bisnis Saya');
+    expect($business)->not->toBeNull()
+        ->and($business->name)->toBe('Toko SaaS')
+        ->and($user->isOwnerOf($business))->toBeTrue()
+        ->and($business->accounts()->count())->toBe(16);
 });
 
 test('registered user can access dashboard with active entity', function () {

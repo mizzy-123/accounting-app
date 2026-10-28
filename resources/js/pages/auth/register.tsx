@@ -64,32 +64,11 @@ export default function Register({ passwordRules }: Props) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="business_name">
-                                    Nama bisnis{' '}
-                                    <span className="text-muted-foreground text-xs font-normal">
-                                        (opsional)
-                                    </span>
-                                </Label>
-                                <Input
-                                    id="business_name"
-                                    type="text"
-                                    tabIndex={3}
-                                    name="business_name"
-                                    placeholder="Contoh: Manifestasi, PT ABC"
-                                />
-                                <p className="text-muted-foreground text-xs">
-                                    Entity Personal & bisnis otomatis dibuat
-                                    saat pendaftaran.
-                                </p>
-                                <InputError message={errors.business_name} />
-                            </div>
-
-                            <div className="grid gap-2">
                                 <Label htmlFor="password">Password</Label>
                                 <PasswordInput
                                     id="password"
                                     required
-                                    tabIndex={4}
+                                    tabIndex={3}
                                     autoComplete="new-password"
                                     name="password"
                                     placeholder="Password"
@@ -105,7 +84,7 @@ export default function Register({ passwordRules }: Props) {
                                 <PasswordInput
                                     id="password_confirmation"
                                     required
-                                    tabIndex={5}
+                                    tabIndex={4}
                                     autoComplete="new-password"
                                     name="password_confirmation"
                                     placeholder="Ulangi password"
@@ -119,7 +98,7 @@ export default function Register({ passwordRules }: Props) {
                             <Button
                                 type="submit"
                                 className="mt-2 w-full"
-                                tabIndex={6}
+                                tabIndex={5}
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
@@ -129,7 +108,7 @@ export default function Register({ passwordRules }: Props) {
 
                         <div className="text-muted-foreground text-center text-sm">
                             Sudah punya akun?{' '}
-                            <TextLink href={login()} tabIndex={7}>
+                            <TextLink href={login()} tabIndex={6}>
                                 Masuk
                             </TextLink>
                         </div>
@@ -143,5 +122,5 @@ export default function Register({ passwordRules }: Props) {
 Register.layout = {
     title: 'Buat akun gratis',
     description:
-        'Daftar dan langsung dapat workspace Personal + entity bisnis dengan chart of accounts lengkap.',
+        'Daftar dan dapat workspace Personal. Entity bisnis bisa dibuat kapan saja dari dalam aplikasi.',
 };
